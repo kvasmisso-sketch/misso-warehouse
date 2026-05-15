@@ -22,3 +22,18 @@ html {
   margin: 0;
   padding: 0;
 }
+
+/* Адаптив для мобильного */
+@media (max-width: 768px) {
+  button {
+    font-size: 11px !important;
+    padding: 10px 6px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  button {
+    font-size: 9px !important;
+    padding: 8px 4px !important;
+  }
+}
