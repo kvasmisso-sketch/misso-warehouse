@@ -122,7 +122,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: COLORS.bg, minHeight: '100vh', color: COLORS.text }}>
+    <div style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: COLORS.bg, minHeight: '100vh', width: '100vw', height: '100vh', color: COLORS.text, margin: 0, padding: 0, overflow: 'hidden' }}>
       <header style={{ backgroundColor: COLORS.header, color: COLORS.text, padding: '20px', textAlign: 'center', borderBottom: `1px solid ${COLORS.border}` }}>
         <h1 style={{ margin: 0, fontSize: '28px' }}>Irina MISSO Warehouse</h1>
         <p style={{ margin: '5px 0 0 0', fontSize: '13px', opacity: 0.7 }}>Система управління складом</p>
