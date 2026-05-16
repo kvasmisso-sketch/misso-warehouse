@@ -627,7 +627,7 @@ export default function App() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              flex: '0 0 auto',
+              flex: '1',
               padding: '14px 10px',
               border: 'none',
               backgroundColor: activeTab === tab.id ? COLORS.accent : COLORS.header,
