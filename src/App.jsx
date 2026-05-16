@@ -32,46 +32,410 @@ const MISSO_PRODUCTS = {
   'MANGO-125': { name: 'Mango in Chocolate 125g', sku: 'MANGO-125', category: 'Mango' }
 };
 
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function LoginPage({ onLogin, onFirstLogin }) {
+  const [userName, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  async function loadUsers() {
+    try {
+      const { data } = await supabase.from('users').select('name, is_admin');
+      if (data) setUsers(data);
+    } catch (err) {
+      console.error('Помилка завантаження користувачів:', err);
+    }
+    setLoading(false);
+  }
+
+  async function handleLogin() {
+    if (!userName || !password) {
+      setError('Введіть ім\'я та пароль!');
+      return;
+    }
+
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id, name, password_hash, is_admin')
+        .eq('name', userName)
+        .single();
+
+      if (!userData) {
+        setError('Користувача не знайдено!');
+        return;
+      }
+
+      const passwordHash = await hashPassword(password);
+      if (userData.password_hash !== passwordHash) {
+        setError('Неправильний пароль!');
+        return;
+      }
+
+      setError('');
+      onLogin(userData.name, userData.is_admin);
+      localStorage.setItem('currentUser', userData.name);
+      localStorage.setItem('isAdmin', userData.is_admin);
+    } catch (err) {
+      setError('Помилка при вході!');
+      console.error('Login error:', err);
+    }
+  }
+
+  async function handleFirstLogin() {
+    if (!userName) {
+      setError('Введіть ім\'я!');
+      return;
+    }
+
+    if (password.length < 4) {
+      setError('Пароль має бути щонайменше 4 символи!');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Паролі не збігаються!');
+      return;
+    }
+
+    try {
+      const existingUser = users.find(u => u.name === userName);
+      if (existingUser) {
+        setError('Це ім\'я вже використовується!');
+        return;
+      }
+
+      const passwordHash = await hashPassword(password);
+      await supabase.from('users').insert([{
+        name: userName,
+        password_hash: passwordHash,
+        is_admin: false
+      }]);
+
+      setError('');
+      onFirstLogin(userName);
+      localStorage.setItem('currentUser', userName);
+      localStorage.setItem('isAdmin', false);
+    } catch (err) {
+      setError('Помилка при реєстрації!');
+      console.error('First login error:', err);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ 
+        backgroundColor: COLORS.bg, 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center'
+      }}>
+        <p style={{ color: COLORS.accent }}>Завантаження...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ 
+      backgroundColor: COLORS.bg, 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      flexDirection: 'column'
+    }}>
+      <div style={{
+        backgroundColor: COLORS.header,
+        padding: '40px',
+        borderRadius: '8px',
+        border: `1px solid ${COLORS.border}`,
+        width: '350px'
+      }}>
+        <h1 style={{ color: COLORS.accent, textAlign: 'center', marginTop: 0, fontSize: '24px' }}>Irina MISSO</h1>
+        <p style={{ color: COLORS.text, textAlign: 'center', fontSize: '12px', opacity: 0.7, marginBottom: '30px' }}>Система управління складом</p>
+
+        {!isFirstLogin ? (
+          <>
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Ім'я користувача:</label>
+            <select 
+              value={userName} 
+              onChange={(e) => setUserName(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '20px',
+                backgroundColor: COLORS.bg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: '4px',
+                boxSizing: 'border-box'
+              }}
+            >
+              <option value="">Виберіть ім'я</option>
+              {users.map(user => (
+                <option key={user.name} value={user.name}>{user.name}</option>
+              ))}
+            </select>
+
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Пароль:</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Введіть пароль"
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '20px',
+                backgroundColor: COLORS.bg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: '4px',
+                boxSizing: 'border-box'
+              }}
+              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+            />
+
+            {error && <p style={{ color: COLORS.outbound, fontSize: '12px', marginBottom: '15px' }}>{error}</p>}
+
+            <button 
+              onClick={handleLogin}
+              style={{
+                width: '100%',
+                padding: '10px',
+                backgroundColor: COLORS.inbound,
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                marginBottom: '10px'
+              }}
+            >
+              Увійти
+            </button>
+
+            <button 
+              onClick={() => {
+                setIsFirstLogin(true);
+                setUserName('');
+                setPassword('');
+                setConfirmPassword('');
+                setError('');
+              }}
+              style={{
+                width: '100%',
+                padding: '10px',
+                backgroundColor: COLORS.accent,
+                color: COLORS.header,
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              Новий користувач
+            </button>
+          </>
+        ) : (
+          <>
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Ім'я користувача:</label>
+            <input 
+              type="text" 
+              value={userName} 
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Ваше ім'я"
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '20px',
+                backgroundColor: COLORS.bg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: '4px',
+                boxSizing: 'border-box'
+              }}
+            />
+
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Пароль:</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Мінімум 4 символи"
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '20px',
+                backgroundColor: COLORS.bg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: '4px',
+                boxSizing: 'border-box'
+              }}
+            />
+
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Підтвердіть пароль:</label>
+            <input 
+              type="password" 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Повторіть пароль"
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '20px',
+                backgroundColor: COLORS.bg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: '4px',
+                boxSizing: 'border-box'
+              }}
+              onKeyPress={(e) => e.key === 'Enter' && handleFirstLogin()}
+            />
+
+            {error && <p style={{ color: COLORS.outbound, fontSize: '12px', marginBottom: '15px' }}>{error}</p>}
+
+            <button 
+              onClick={handleFirstLogin}
+              style={{
+                width: '100%',
+                padding: '10px',
+                backgroundColor: COLORS.inbound,
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                marginBottom: '10px'
+              }}
+            >
+              Створити обліковий запис
+            </button>
+
+            <button 
+              onClick={() => {
+                setIsFirstLogin(false);
+                setUserName('');
+                setPassword('');
+                setConfirmPassword('');
+                setError('');
+              }}
+              style={{
+                width: '100%',
+                padding: '10px',
+                backgroundColor: COLORS.border,
+                color: COLORS.text,
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              Повернутись до входу
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [inbound, setInbound] = useState([]);
   const [outbound, setOutbound] = useState([]);
   const [stock, setStock] = useState([]);
   const [movements, setMovements] = useState([]);
+  const [auditLog, setAuditLog] = useState([]);
   const [clients, setClients] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [editValues, setEditValues] = useState({});
 
   useEffect(() => {
-    loadAllData();
-    const subscription = supabase
-      .channel('all-tables')
-      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-        loadAllData();
-      })
-      .subscribe();
-    return () => subscription.unsubscribe();
+    const savedUser = localStorage.getItem('currentUser');
+    const savedAdmin = localStorage.getItem('isAdmin') === 'true';
+    if (savedUser) {
+      setCurrentUser(savedUser);
+      setIsAdmin(savedAdmin);
+      loadAllData();
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadAllData();
+      const subscription = supabase
+        .channel('all-tables')
+        .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+          loadAllData();
+        })
+        .subscribe();
+      return () => subscription.unsubscribe();
+    }
+  }, [currentUser]);
 
   async function loadAllData() {
     setLoading(true);
     try {
-      const [inboundData, outboundData, stockData, movementData, clientsData] = await Promise.all([
+      const [inboundData, outboundData, stockData, movementData, auditData, clientsData, usersData] = await Promise.all([
         supabase.from('inbound').select('*').order('created_at', { ascending: false }),
         supabase.from('outbound').select('*').order('created_at', { ascending: false }),
         supabase.from('stock').select('*'),
         supabase.from('movements').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('clients').select('*').order('name', { ascending: true })
+        supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('clients').select('*').order('name', { ascending: true }),
+        supabase.from('users').select('id, name, is_admin, created_at')
       ]);
 
       if (inboundData.data) setInbound(inboundData.data);
       if (outboundData.data) setOutbound(outboundData.data);
       if (stockData.data) setStock(stockData.data);
       if (movementData.data) setMovements(movementData.data);
+      if (auditData.data) setAuditLog(auditData.data);
       if (clientsData.data) setClients(clientsData.data);
+      if (usersData.data) setUsers(usersData.data);
     } catch (err) {
       console.error('Помилка завантаження:', err);
     }
     setLoading(false);
+  }
+
+  async function logAudit(action, tableName, details, oldValue = null, newValue = null) {
+    try {
+      await supabase.from('audit_log').insert([{
+        user_name: currentUser,
+        action,
+        table_name: tableName,
+        details,
+        old_value: oldValue,
+        new_value: newValue
+      }]);
+    } catch (err) {
+      console.error('Помилка логування:', err);
+    }
   }
 
   function getDashboardStats() {
@@ -85,29 +449,125 @@ export default function App() {
   async function addInbound(formData) {
     try {
       await supabase.from('inbound').insert([formData]);
+      
+      const existingStock = stock.find(s => s.product_sku === formData.product_sku);
+      
+      if (existingStock) {
+        await supabase
+          .from('stock')
+          .update({ quantity: existingStock.quantity + formData.quantity })
+          .eq('product_sku', formData.product_sku);
+      } else {
+        await supabase.from('stock').insert([{
+          product_sku: formData.product_sku,
+          quantity: formData.quantity
+        }]);
+      }
+
       await supabase.from('movements').insert([{
         type: 'INBOUND',
         product_sku: formData.product_sku,
         quantity: formData.quantity,
         notes: `Надійшло з України: ${formData.quantity} од.`
       }]);
+
+      await logAudit('ДОДАВ', 'inbound', `Додав ${formData.quantity} од. ${formData.product_sku}`, null, formData.quantity);
+      
+      loadAllData();
+      alert('✅ Товар успішно додано!');
     } catch (err) {
       console.error('Помилка:', err);
+      alert('❌ Помилка при додаванні!');
     }
   }
 
   async function addOutbound(formData) {
     try {
+      const currentStock = stock.find(s => s.product_sku === formData.product_sku);
+      
+      if (!currentStock || currentStock.quantity < formData.quantity) {
+        alert(`❌ Недостатньо товару! На складі: ${currentStock?.quantity || 0} од., а ви хочете відправити: ${formData.quantity} од.`);
+        return;
+      }
+
       await supabase.from('outbound').insert([formData]);
+
+      await supabase
+        .from('stock')
+        .update({ quantity: currentStock.quantity - formData.quantity })
+        .eq('product_sku', formData.product_sku);
+
       await supabase.from('movements').insert([{
         type: 'OUTBOUND',
         product_sku: formData.product_sku,
         quantity: formData.quantity,
         notes: `Вивезено до ${formData.client}: ${formData.quantity} од.`
       }]);
+
+      await logAudit('ВІДПРАВИВ', 'outbound', `Відправив ${formData.quantity} од. до ${formData.client}`, currentStock.quantity, currentStock.quantity - formData.quantity);
+      
+      loadAllData();
+      alert('✅ Товар успішно відправлено!');
     } catch (err) {
       console.error('Помилка:', err);
+      alert('❌ Помилка при відправленні!');
     }
+  }
+
+  async function editOperation(id, tableName, oldData, newData) {
+    if (!currentUser || (currentUser !== (oldData.user_name || currentUser) && !isAdmin)) {
+      alert('❌ Ви можете редагувати тільки свої операції!');
+      return;
+    }
+
+    try {
+      await supabase.from(tableName).update(newData).eq('id', id);
+      
+      const diffFields = Object.keys(newData).filter(key => oldData[key] !== newData[key]);
+      const details = diffFields.map(f => `${f}: ${oldData[f]} → ${newData[f]}`).join(', ');
+      
+      await logAudit('РЕДАГУВАВ', tableName, details, JSON.stringify(oldData), JSON.stringify(newData));
+      
+      setEditingId(null);
+      loadAllData();
+      alert('✅ Запис успішно оновлено!');
+    } catch (err) {
+      console.error('Помилка:', err);
+      alert('❌ Помилка при редагуванні!');
+    }
+  }
+
+  async function deleteOperation(id, tableName, data) {
+    if (!currentUser || (currentUser !== (data.user_name || currentUser) && !isAdmin)) {
+      alert('❌ Ви можете видаляти тільки свої операції!');
+      return;
+    }
+
+    if (!confirm('⚠️ Ви впевнені що хочете видалити цю операцію? Дія неповоротна!')) {
+      return;
+    }
+
+    try {
+      await supabase.from(tableName).delete().eq('id', id);
+      
+      await logAudit('ВИДАЛИВ', tableName, `Видалив запис: ${JSON.stringify(data)}`, JSON.stringify(data), null);
+      
+      loadAllData();
+      alert('✅ Запис успішно видалено!');
+    } catch (err) {
+      console.error('Помилка:', err);
+      alert('❌ Помилка при видаленні!');
+    }
+  }
+
+  if (!currentUser) {
+    return <LoginPage onLogin={(user, admin) => {
+      setCurrentUser(user);
+      setIsAdmin(admin);
+    }} onFirstLogin={(user) => {
+      setCurrentUser(user);
+      setIsAdmin(false);
+    }} />;
   }
 
   const stats = getDashboardStats();
@@ -117,32 +577,50 @@ export default function App() {
     { id: 'outbound', label: '🚚 PL→Client' },
     { id: 'stock', label: '🗃️ Stock' },
     { id: 'movements', label: '📋 Log' },
-    { id: 'products', label: '⚙️ Products' },
-    { id: 'clients', label: '👥 Clients' }
+    { id: 'audit', label: '📝 Журнал' },
+    { id: 'products', label: '⚙️ Продукти' },
+    { id: 'clients', label: '👥 Клієнти' }
   ];
 
+  if (isAdmin) {
+    tabs.push({ id: 'admin', label: '🔐 Адмін' });
+  }
+
   return (
-    <div style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: COLORS.bg, minHeight: '100vh', color: COLORS.text, margin: '0', padding: '0' }}>
-      <header style={{ backgroundColor: COLORS.header, color: COLORS.text, padding: '20px', textAlign: 'center', borderBottom: `1px solid ${COLORS.border}` }}>
-        <h1 style={{ margin: 0, fontSize: '28px' }}>Irina MISSO Warehouse</h1>
-        <p style={{ margin: '5px 0 0 0', fontSize: '13px', opacity: 0.7 }}>Система управління складом</p>
+    <div style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: COLORS.bg, minHeight: '100vh', color: COLORS.text, margin: 0, padding: 0 }}>
+      <header style={{ backgroundColor: COLORS.header, color: COLORS.text, padding: '20px', textAlign: 'center', borderBottom: `1px solid ${COLORS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '28px' }}>Irina MISSO Warehouse</h1>
+          <p style={{ margin: '5px 0 0 0', fontSize: '13px', opacity: 0.7 }}>Система управління складом</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: COLORS.accent }}>Користувач: <strong>{currentUser}</strong> {isAdmin && '👑'}</p>
+          <button onClick={() => {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isAdmin');
+            setCurrentUser(null);
+          }} style={{ padding: '6px 12px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+            Вихід
+          </button>
+        </div>
       </header>
 
-      <div style={{ display: 'flex', borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.header }}>
+      <div style={{ display: 'flex', borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.header, overflowX: 'auto' }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              flex: 1,
-              padding: '14px',
+              flex: '0 0 auto',
+              padding: '14px 10px',
               border: 'none',
               backgroundColor: activeTab === tab.id ? COLORS.accent : COLORS.header,
               color: activeTab === tab.id ? COLORS.header : COLORS.text,
               fontWeight: activeTab === tab.id ? 'bold' : 'normal',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              fontSize: '13px'
+              fontSize: '12px',
+              whiteSpace: 'nowrap'
             }}
           >
             {tab.label}
@@ -172,12 +650,50 @@ export default function App() {
           </div>
         )}
 
-        {!loading && activeTab === 'inbound' && <InboundTab inbound={inbound} products={MISSO_PRODUCTS} onAdd={addInbound} />}
-        {!loading && activeTab === 'outbound' && <OutboundTab outbound={outbound} products={MISSO_PRODUCTS} clients={clients} onAdd={addOutbound} />}
+        {!loading && activeTab === 'inbound' && <InboundTab inbound={inbound} products={MISSO_PRODUCTS} onAdd={addInbound} currentUser={currentUser} isAdmin={isAdmin} onEdit={editOperation} onDelete={deleteOperation} editingId={editingId} setEditingId={setEditingId} editValues={editValues} setEditValues={setEditValues} />}
+        {!loading && activeTab === 'outbound' && <OutboundTab outbound={outbound} products={MISSO_PRODUCTS} clients={clients} stock={stock} onAdd={addOutbound} currentUser={currentUser} isAdmin={isAdmin} onEdit={editOperation} onDelete={deleteOperation} editingId={editingId} setEditingId={setEditingId} editValues={editValues} setEditValues={setEditValues} />}
         {!loading && activeTab === 'stock' && <StockTab stock={stock} products={MISSO_PRODUCTS} />}
         {!loading && activeTab === 'movements' && <MovementsTab movements={movements} products={MISSO_PRODUCTS} />}
+        {!loading && activeTab === 'audit' && <AuditTab auditLog={auditLog} />}
         {!loading && activeTab === 'products' && <ProductsTab products={MISSO_PRODUCTS} />}
-        {!loading && activeTab === 'clients' && <ClientsTab clients={clients} onReload={loadAllData} />}
+        {!loading && activeTab === 'clients' && <ClientsTab clients={clients} currentUser={currentUser} isAdmin={isAdmin} onAddClient={async (clientData) => {
+          try {
+            await supabase.from('clients').insert([clientData]);
+            await logAudit('ДОДАВ_КЛІЄНТА', 'clients', `Додав клієнта: ${clientData.name}`, null, JSON.stringify(clientData));
+            loadAllData();
+            alert('✅ Клієнта успішно додано!');
+          } catch (err) {
+            console.error('Помилка:', err);
+            alert('❌ Помилка при додаванні клієнта!');
+          }
+        }} onDeleteClient={async (clientId, clientName) => {
+          if (!isAdmin) {
+            alert('❌ Тільки адміністратор може видаляти клієнтів!');
+            return;
+          }
+          if (!confirm(`⚠️ Видалити клієнта ${clientName}?`)) return;
+          try {
+            await supabase.from('clients').delete().eq('id', clientId);
+            await logAudit('ВИДАЛИВ_КЛІЄНТА', 'clients', `Видалив клієнта: ${clientName}`, null, null);
+            loadAllData();
+            alert('✅ Клієнта успішно видалено!');
+          } catch (err) {
+            console.error('Помилка:', err);
+            alert('❌ Помилка при видаленні клієнта!');
+          }
+        }} />}
+        {!loading && activeTab === 'admin' && isAdmin && <AdminPanel users={users} onDeleteUser={async (userId, userName) => {
+          if (!confirm(`⚠️ Видалити користувача ${userName}?\n\nУсі його операції залишаться в журналі.`)) return;
+          try {
+            await supabase.from('users').delete().eq('id', userId);
+            await logAudit('ВИДАЛИВ_КОРИСТУВАЧА', 'users', `Видалив користувача: ${userName}`, null, null);
+            loadAllData();
+            alert('✅ Користувача успішно видалено!');
+          } catch (err) {
+            console.error('Помилка:', err);
+            alert('❌ Помилка при видаленні користувача!');
+          }
+        }} />}
       </div>
     </div>
   );
@@ -201,20 +717,23 @@ function FlowBox({ title, value, color }) {
   );
 }
 
-function InboundTab({ inbound, products, onAdd }) {
+function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, onDelete, editingId, setEditingId, editValues, setEditValues }) {
   const [sku, setSku] = useState('FITBAR-MC-30');
   const [quantity, setQuantity] = useState(100);
 
   const handleAdd = async () => {
-    if (quantity > 0) {
-      await onAdd({
-        product_sku: sku,
-        quantity: parseInt(quantity),
-        origin: 'Україна',
-        status: 'received'
-      });
-      setQuantity(100);
+    if (quantity <= 0) {
+      alert('Кількість має бути більше 0!');
+      return;
     }
+    await onAdd({
+      product_sku: sku,
+      quantity: parseInt(quantity),
+      origin: 'Україна',
+      status: 'received',
+      user_name: currentUser
+    });
+    setQuantity(100);
   };
 
   return (
@@ -243,26 +762,50 @@ function InboundTab({ inbound, products, onAdd }) {
       </div>
 
       <h3 style={{ color: COLORS.accent }}>Історія</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}` }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
         <thead>
           <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Дата</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
-            <th style={{ padding: '10px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Статус</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дата</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Користувач</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дія</th>
           </tr>
         </thead>
         <tbody>
           {inbound.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
+            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
           ) : (
-            inbound.slice(0, 20).map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '10px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
-                <td style={{ padding: '10px', color: COLORS.text }}>{item.product_sku}</td>
-                <td style={{ padding: '10px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
-                <td style={{ padding: '10px', color: COLORS.inbound }}>✓ Отримано</td>
-              </tr>
+            inbound.slice(0, 20).map((item) => (
+              editingId === item.id ? (
+                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.bg }}>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                  <td style={{ padding: '8px', textAlign: 'center' }}>
+                    <input type="number" value={editValues.quantity || item.quantity} onChange={(e) => setEditValues({...editValues, quantity: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    <button onClick={() => onEdit(item.id, 'inbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
+                    <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
+                  <td style={{ padding: '8px' }}>
+                    {(currentUser === item.user_name || isAdmin) && (
+                      <>
+                        <button onClick={() => { setEditingId(item.id); setEditValues({quantity: item.quantity}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
+                        <button onClick={() => onDelete(item.id, 'inbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              )
             ))
           )}
         </tbody>
@@ -271,22 +814,32 @@ function InboundTab({ inbound, products, onAdd }) {
   );
 }
 
-function OutboundTab({ outbound, products, clients, onAdd }) {
+function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, isAdmin, onEdit, onDelete, editingId, setEditingId, editValues, setEditValues }) {
   const [sku, setSku] = useState('FITBAR-MC-30');
   const [quantity, setQuantity] = useState(50);
   const [client, setClient] = useState(clients.length > 0 ? clients[0].name : '');
 
+  const currentStock = stock.find(s => s.product_sku === sku);
+  const availableQty = currentStock?.quantity || 0;
+
   const handleAdd = async () => {
-    if (quantity > 0 && client) {
-      await onAdd({
-        product_sku: sku,
-        quantity: parseInt(quantity),
-        client,
-        destination: 'Польща',
-        status: 'shipped'
-      });
-      setQuantity(50);
+    if (quantity <= 0) {
+      alert('Кількість має бути більше 0!');
+      return;
     }
+    if (!client) {
+      alert('Виберіть клієнта!');
+      return;
+    }
+    await onAdd({
+      product_sku: sku,
+      quantity: parseInt(quantity),
+      client,
+      destination: 'Польща',
+      status: 'shipped',
+      user_name: currentUser
+    });
+    setQuantity(50);
   };
 
   return (
@@ -296,11 +849,14 @@ function OutboundTab({ outbound, products, clients, onAdd }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Продукт:</label>
-            <select value={sku} onChange={(e) => setSku(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
+            <select value={sku} onChange={(e) => setSky(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
               {Object.entries(products).map(([key, val]) => (
                 <option key={key} value={key}>{val.name}</option>
               ))}
             </select>
+            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: availableQty < 20 ? COLORS.outbound : COLORS.inbound }}>
+              На складі: {availableQty} од.
+            </p>
           </div>
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>К-сть:</label>
@@ -309,9 +865,13 @@ function OutboundTab({ outbound, products, clients, onAdd }) {
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Клієнт:</label>
             <select value={client} onChange={(e) => setClient(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
-              {clients.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
+              {clients.length === 0 ? (
+                <option>Немає клієнтів</option>
+              ) : (
+                clients.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))
+              )}
             </select>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -323,28 +883,53 @@ function OutboundTab({ outbound, products, clients, onAdd }) {
       </div>
 
       <h3 style={{ color: COLORS.accent }}>Історія</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}` }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
         <thead>
           <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Дата</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
-            <th style={{ padding: '10px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Клієнт</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Статус</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дата</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Користувач</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Клієнт</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дія</th>
           </tr>
         </thead>
         <tbody>
           {outbound.length === 0 ? (
-            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
+            <tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
           ) : (
-            outbound.slice(0, 20).map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '10px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
-                <td style={{ padding: '10px', color: COLORS.text }}>{item.product_sku}</td>
-                <td style={{ padding: '10px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
-                <td style={{ padding: '10px', color: COLORS.text }}>{item.client}</td>
-                <td style={{ padding: '10px', color: COLORS.outbound }}>✓ Відправлено</td>
-              </tr>
+            outbound.slice(0, 20).map((item) => (
+              editingId === item.id ? (
+                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.bg }}>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                  <td style={{ padding: '8px', textAlign: 'center' }}>
+                    <input type="number" value={editValues.quantity || item.quantity} onChange={(e) => setEditValues({...editValues, quantity: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
+                  </td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
+                  <td style={{ padding: '8px' }}>
+                    <button onClick={() => onEdit(item.id, 'outbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
+                    <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
+                  <td style={{ padding: '8px' }}>
+                    {(currentUser === item.user_name || isAdmin) && (
+                      <>
+                        <button onClick={() => { setEditingId(item.id); setEditValues({quantity: item.quantity}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
+                        <button onClick={() => onDelete(item.id, 'outbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              )
             ))
           )}
         </tbody>
@@ -357,31 +942,31 @@ function StockTab({ stock, products }) {
   return (
     <div>
       <h2 style={{ color: COLORS.accent }}>🗃️ Запаси</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}` }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
         <thead>
           <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>SKU</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
-            <th style={{ padding: '10px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
-            <th style={{ padding: '10px', textAlign: 'center', color: COLORS.accent }}>Статус</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>SKU</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Статус</th>
           </tr>
         </thead>
         <tbody>
           {stock.length === 0 ? (
             <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Склад порожній</td></tr>
           ) : (
-            stock.map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '10px', fontFamily: 'monospace', color: COLORS.accent }}>{item.product_sku}</td>
-                <td style={{ padding: '10px', color: COLORS.text }}>{products[item.product_sku]?.name || item.product_sku}</td>
-                <td style={{ padding: '10px', textAlign: 'center', fontWeight: 'bold', color: COLORS.text }}>{item.quantity}</td>
-                <td style={{ padding: '10px', textAlign: 'center' }}>
+            stock.map((item) => (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: COLORS.accent }}>{item.product_sku}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{products[item.product_sku]?.name || item.product_sku}</td>
+                <td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: COLORS.text }}>{item.quantity}</td>
+                <td style={{ padding: '8px', textAlign: 'center' }}>
                   {item.quantity < 5 ? (
                     <span style={{ color: COLORS.outbound, fontWeight: 'bold' }}>🔴 КРИТИЧНИЙ</span>
                   ) : item.quantity < 20 ? (
-                    <span style={{ color: '#ff9800', fontWeight: 'bold' }}>🟡 LOW</span>
+                    <span style={{ color: '#ff9800', fontWeight: 'bold' }}>🟡 НИЗЬКИЙ</span>
                   ) : (
-                    <span style={{ color: COLORS.inbound }}>🟢 OK</span>
+                    <span style={{ color: COLORS.inbound }}>🟢 ОК</span>
                   )}
                 </td>
               </tr>
@@ -396,46 +981,76 @@ function StockTab({ stock, products }) {
 function MovementsTab({ movements, products }) {
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>📋 Журнал</h2>
-      <div style={{ backgroundColor: COLORS.header, borderRadius: '6px', overflow: 'hidden', border: `1px solid ${COLORS.border}` }}>
-        {movements.length === 0 ? (
-          <p style={{ padding: '20px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає записів</p>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-                <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Час</th>
-                <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Тип</th>
-                <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>SKU</th>
-                <th style={{ padding: '10px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
-                <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Примітка</th>
+      <h2 style={{ color: COLORS.accent }}>📋 Журнал операцій</h2>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '11px' }}>
+        <thead>
+          <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Час</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Тип</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>SKU</th>
+            <th style={{ padding: '6px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Примітка</th>
+          </tr>
+        </thead>
+        <tbody>
+          {movements.length === 0 ? (
+            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає записів</td></tr>
+          ) : (
+            movements.slice(0, 50).map((item) => (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <td style={{ padding: '6px', color: COLORS.text }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                <td style={{ padding: '6px' }}>
+                  <span style={{ 
+                    padding: '2px 6px', 
+                    borderRadius: '3px', 
+                    backgroundColor: item.type === 'INBOUND' ? COLORS.inbound : COLORS.outbound,
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 'bold'
+                  }}>
+                    {item.type === 'INBOUND' ? 'В' : 'З'}
+                  </span>
+                </td>
+                <td style={{ padding: '6px', fontFamily: 'monospace', color: COLORS.accent, fontSize: '10px' }}>{item.product_sku}</td>
+                <td style={{ padding: '6px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
+                <td style={{ padding: '6px', color: COLORS.text }}>{item.notes}</td>
               </tr>
-            </thead>
-            <tbody>
-              {movements.slice(0, 50).map((item, idx) => (
-                <tr key={idx} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  <td style={{ padding: '10px', color: COLORS.text, fontSize: '12px' }}>{new Date(item.created_at).toLocaleString('uk-UA')}</td>
-                  <td style={{ padding: '10px' }}>
-                    <span style={{ 
-                      padding: '4px 8px', 
-                      borderRadius: '4px', 
-                      backgroundColor: item.type === 'INBOUND' ? COLORS.inbound : COLORS.outbound,
-                      color: 'white',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
-                    }}>
-                      {item.type}
-                    </span>
-                  </td>
-                  <td style={{ padding: '10px', fontFamily: 'monospace', color: COLORS.accent, fontSize: '12px' }}>{item.product_sku}</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
-                  <td style={{ padding: '10px', color: COLORS.text, fontSize: '12px' }}>{item.notes}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function AuditTab({ auditLog }) {
+  return (
+    <div>
+      <h2 style={{ color: COLORS.accent }}>📝 Журнал аудиту</h2>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '11px' }}>
+        <thead>
+          <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Час</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Користувач</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Дія</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Деталі</th>
+          </tr>
+        </thead>
+        <tbody>
+          {auditLog.length === 0 ? (
+            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає записів</td></tr>
+          ) : (
+            auditLog.slice(0, 100).map((item) => (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <td style={{ padding: '6px', color: COLORS.text }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                <td style={{ padding: '6px', color: COLORS.accent, fontWeight: 'bold', fontSize: '10px' }}>{item.user_name}</td>
+                <td style={{ padding: '6px', color: COLORS.outbound, fontSize: '10px' }}>{item.action}</td>
+                <td style={{ padding: '6px', color: COLORS.text, fontSize: '10px' }}>{item.details}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -456,7 +1071,7 @@ function ProductsTab({ products }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
             {items.map(p => (
               <div key={p.sku} style={{ backgroundColor: COLORS.header, padding: '15px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.accent}` }}>
-                <h4 style={{ margin: '0 0 10px 0', color: COLORS.accent }}>{p.name}</h4>
+                <h4 style={{ margin: '0 0 10px 0', color: COLORS.accent, fontSize: '13px' }}>{p.name}</h4>
                 <p style={{ margin: '5px 0', fontSize: '11px', color: COLORS.text, opacity: 0.7 }}>SKU: <code style={{ color: COLORS.accent }}>{p.sku}</code></p>
               </div>
             ))}
@@ -467,31 +1082,17 @@ function ProductsTab({ products }) {
   );
 }
 
-function ClientsTab({ clients, onReload }) {
+function ClientsTab({ clients, currentUser, isAdmin, onAddClient, onDeleteClient }) {
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [contact, setContact] = useState('');
 
   const handleAdd = async () => {
     if (name && city) {
-      try {
-        await supabase.from('clients').insert([{ name, city, contact }]);
-        setName('');
-        setCity('');
-        setContact('');
-        onReload();
-      } catch (err) {
-        console.error('Помилка:', err);
-      }
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await supabase.from('clients').delete().eq('id', id);
-      onReload();
-    } catch (err) {
-      console.error('Помилка:', err);
+      await onAddClient({ name, city, contact });
+      setName('');
+      setCity('');
+      setContact('');
     }
   };
 
@@ -521,13 +1122,13 @@ function ClientsTab({ clients, onReload }) {
       </div>
 
       <h3 style={{ color: COLORS.accent }}>Список клієнтів</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}` }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
         <thead>
           <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Назва</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Місто</th>
-            <th style={{ padding: '10px', textAlign: 'left', color: COLORS.accent }}>Контакт</th>
-            <th style={{ padding: '10px', textAlign: 'center', color: COLORS.accent }}>Дія</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Назва</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Місто</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Контакт</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Дія</th>
           </tr>
         </thead>
         <tbody>
@@ -536,19 +1137,71 @@ function ClientsTab({ clients, onReload }) {
           ) : (
             clients.map((client) => (
               <tr key={client.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '10px', color: COLORS.text }}>{client.name}</td>
-                <td style={{ padding: '10px', color: COLORS.text }}>{client.city}</td>
-                <td style={{ padding: '10px', color: COLORS.text, fontSize: '12px' }}>{client.contact || '—'}</td>
-                <td style={{ padding: '10px', textAlign: 'center' }}>
-                  <button onClick={() => handleDelete(client.id)} style={{ padding: '4px 12px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                    Видалити
-                  </button>
+                <td style={{ padding: '8px', color: COLORS.text }}>{client.name}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{client.city}</td>
+                <td style={{ padding: '8px', color: COLORS.text, fontSize: '11px' }}>{client.contact || '—'}</td>
+                <td style={{ padding: '8px', textAlign: 'center' }}>
+                  {isAdmin && (
+                    <button onClick={() => onDeleteClient(client.id, client.name)} style={{ padding: '4px 8px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
+                      Видалити
+                    </button>
+                  )}
                 </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function AdminPanel({ users, onDeleteUser }) {
+  return (
+    <div>
+      <h2 style={{ color: COLORS.accent }}>🔐 Адміністраторська панель</h2>
+      
+      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
+        <h3 style={{ color: COLORS.accent }}>Користувачі системи</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <thead>
+            <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
+              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Ім'я</th>
+              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дата створення</th>
+              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Роль</th>
+              <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Дія</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <td style={{ padding: '8px', color: COLORS.text }}>{user.name}</td>
+                <td style={{ padding: '8px', color: COLORS.text, fontSize: '11px' }}>{new Date(user.created_at).toLocaleDateString('uk-UA')}</td>
+                <td style={{ padding: '8px', color: user.is_admin ? COLORS.outbound : COLORS.text }}>
+                  {user.is_admin ? '👑 АДМІН' : 'Користувач'}
+                </td>
+                <td style={{ padding: '8px', textAlign: 'center' }}>
+                  {!user.is_admin && (
+                    <button onClick={() => onDeleteUser(user.id, user.name)} style={{ padding: '3px 8px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px' }}>
+                      Видалити
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}` }}>
+        <h3 style={{ color: COLORS.accent }}>Інформація</h3>
+        <p style={{ color: COLORS.text, fontSize: '12px', lineHeight: '1.6' }}>
+          ✅ Кожен користувач створює свій <strong>унікальний пароль</strong> при першому вході.<br/>
+          ✅ Паролі <strong>не видні</strong> адміністратору (навіть вам).<br/>
+          ✅ Видаліть користувача якщо він більше не працює в компанії.<br/>
+          ✅ <strong>Журнал аудиту</strong> зберігає всі дії користувачів - невозможно скрити або змінити операції.
+        </p>
+      </div>
     </div>
   );
 }
