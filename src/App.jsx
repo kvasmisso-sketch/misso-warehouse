@@ -43,20 +43,20 @@ async function hashPassword(password) {
 function LoginPage({ onLogin, onFirstLogin }) {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
-  const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [users, setUsers] = useState([]);
+  const [allowedUsers, setAllowedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   useEffect(() => {
-    loadUsers();
+    loadAllowedUsers();
   }, []);
 
-  async function loadUsers() {
+  async function loadAllowedUsers() {
     try {
-      const { data } = await supabase.from('users').select('name, is_admin');
-      if (data) setUsers(data);
+      const { data } = await supabase.from('allowed_users').select('name').order('name', { ascending: true });
+      if (data) setAllowedUsers(data);
     } catch (err) {
       console.error('Помилка завантаження користувачів:', err);
     }
@@ -99,7 +99,7 @@ function LoginPage({ onLogin, onFirstLogin }) {
 
   async function handleFirstLogin() {
     if (!userName) {
-      setError('Введіть ім\'я!');
+      setError('Виберіть ім\'я!');
       return;
     }
 
@@ -114,18 +114,28 @@ function LoginPage({ onLogin, onFirstLogin }) {
     }
 
     try {
-      const existingUser = users.find(u => u.name === userName);
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('name', userName)
+        .single();
+
       if (existingUser) {
-        setError('Це ім\'я вже використовується!');
+        setError('Користувач з цим ім\'ям вже існує!');
         return;
       }
 
       const passwordHash = await hashPassword(password);
-      await supabase.from('users').insert([{
+      const { error: insertError } = await supabase.from('users').insert([{
         name: userName,
         password_hash: passwordHash,
         is_admin: false
       }]);
+
+      if (insertError) {
+        setError('Помилка при реєстрації!');
+        return;
+      }
 
       setError('');
       onFirstLogin(userName);
@@ -170,7 +180,7 @@ function LoginPage({ onLogin, onFirstLogin }) {
         <h1 style={{ color: COLORS.accent, textAlign: 'center', marginTop: 0, fontSize: '24px' }}>Irina MISSO</h1>
         <p style={{ color: COLORS.text, textAlign: 'center', fontSize: '12px', opacity: 0.7, marginBottom: '30px' }}>Система управління складом</p>
 
-        {!isFirstLogin ? (
+        {!isNewUser ? (
           <>
             <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Ім'я користувача:</label>
             <select 
@@ -188,7 +198,7 @@ function LoginPage({ onLogin, onFirstLogin }) {
               }}
             >
               <option value="">Виберіть ім'я</option>
-              {users.map(user => (
+              {allowedUsers.map(user => (
                 <option key={user.name} value={user.name}>{user.name}</option>
               ))}
             </select>
@@ -233,7 +243,7 @@ function LoginPage({ onLogin, onFirstLogin }) {
 
             <button 
               onClick={() => {
-                setIsFirstLogin(true);
+                setIsNewUser(true);
                 setUserName('');
                 setPassword('');
                 setConfirmPassword('');
@@ -250,17 +260,15 @@ function LoginPage({ onLogin, onFirstLogin }) {
                 fontWeight: 'bold'
               }}
             >
-              Новий користувач
+              Перший раз? Створіть пароль
             </button>
           </>
         ) : (
           <>
-            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Ім'я користувача:</label>
-            <input 
-              type="text" 
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Виберіть ім'я:</label>
+            <select 
               value={userName} 
               onChange={(e) => setUserName(e.target.value)}
-              placeholder="Ваше ім'я"
               style={{
                 width: '100%',
                 padding: '10px',
@@ -271,9 +279,14 @@ function LoginPage({ onLogin, onFirstLogin }) {
                 borderRadius: '4px',
                 boxSizing: 'border-box'
               }}
-            />
+            >
+              <option value="">Виберіть ім'я</option>
+              {allowedUsers.map(user => (
+                <option key={user.name} value={user.name}>{user.name}</option>
+              ))}
+            </select>
 
-            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Пароль:</label>
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Придумайте пароль:</label>
             <input 
               type="password" 
               value={password} 
@@ -291,7 +304,7 @@ function LoginPage({ onLogin, onFirstLogin }) {
               }}
             />
 
-            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Підтвердіть пароль:</label>
+            <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Повторіть пароль:</label>
             <input 
               type="password" 
               value={confirmPassword} 
@@ -326,12 +339,12 @@ function LoginPage({ onLogin, onFirstLogin }) {
                 marginBottom: '10px'
               }}
             >
-              Створити обліковий запис
+              Створити аккаунт
             </button>
 
             <button 
               onClick={() => {
-                setIsFirstLogin(false);
+                setIsNewUser(false);
                 setUserName('');
                 setPassword('');
                 setConfirmPassword('');
@@ -368,6 +381,7 @@ export default function App() {
   const [auditLog, setAuditLog] = useState([]);
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
+  const [allowedUsers, setAllowedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -400,14 +414,15 @@ export default function App() {
   async function loadAllData() {
     setLoading(true);
     try {
-      const [inboundData, outboundData, stockData, movementData, auditData, clientsData, usersData] = await Promise.all([
+      const [inboundData, outboundData, stockData, movementData, auditData, clientsData, usersData, allowedUsersData] = await Promise.all([
         supabase.from('inbound').select('*').order('created_at', { ascending: false }),
         supabase.from('outbound').select('*').order('created_at', { ascending: false }),
         supabase.from('stock').select('*'),
         supabase.from('movements').select('*').order('created_at', { ascending: false }).limit(50),
         supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('clients').select('*').order('name', { ascending: true }),
-        supabase.from('users').select('id, name, is_admin, created_at')
+        supabase.from('users').select('id, name, is_admin, created_at'),
+        supabase.from('allowed_users').select('*').order('name', { ascending: true })
       ]);
 
       if (inboundData.data) setInbound(inboundData.data);
@@ -417,6 +432,7 @@ export default function App() {
       if (auditData.data) setAuditLog(auditData.data);
       if (clientsData.data) setClients(clientsData.data);
       if (usersData.data) setUsers(usersData.data);
+      if (allowedUsersData.data) setAllowedUsers(allowedUsersData.data);
     } catch (err) {
       console.error('Помилка завантаження:', err);
     }
@@ -682,7 +698,17 @@ export default function App() {
             alert('❌ Помилка при видаленні клієнта!');
           }
         }} />}
-        {!loading && activeTab === 'admin' && isAdmin && <AdminPanel users={users} onDeleteUser={async (userId, userName) => {
+        {!loading && activeTab === 'admin' && isAdmin && <AdminPanel users={users} allowedUsers={allowedUsers} onAddAllowedUser={async (newName) => {
+          try {
+            await supabase.from('allowed_users').insert([{ name: newName, created_by: currentUser }]);
+            await logAudit('ДОДАВ_КОРИСТУВАЧА', 'allowed_users', `Додав користувача: ${newName}`, null, newName);
+            loadAllData();
+            alert('✅ Користувача успішно додано!');
+          } catch (err) {
+            console.error('Помилка:', err);
+            alert('❌ Помилка при додаванні користувача!');
+          }
+        }} onDeleteUser={async (userId, userName) => {
           if (!confirm(`⚠️ Видалити користувача ${userName}?\n\nУсі його операції залишаться в журналі.`)) return;
           try {
             await supabase.from('users').delete().eq('id', userId);
@@ -849,7 +875,7 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Продукт:</label>
-            <select value={sku} onChange={(e) => setSky(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
+            <select value={sku} onChange={(e) => setSku(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
               {Object.entries(products).map(([key, val]) => (
                 <option key={key} value={key}>{val.name}</option>
               ))}
@@ -1156,13 +1182,71 @@ function ClientsTab({ clients, currentUser, isAdmin, onAddClient, onDeleteClient
   );
 }
 
-function AdminPanel({ users, onDeleteUser }) {
+function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
+  const [newUserName, setNewUserName] = useState('');
+
+  const handleAddUser = async () => {
+    if (!newUserName) {
+      alert('Введіть ім\'я!');
+      return;
+    }
+
+    const exists = allowedUsers.find(u => u.name === newUserName);
+    if (exists) {
+      alert('Це ім\'я вже існує!');
+      return;
+    }
+
+    await onAddAllowedUser(newUserName);
+    setNewUserName('');
+  };
+
   return (
     <div>
       <h2 style={{ color: COLORS.accent }}>🔐 Адміністраторська панель</h2>
       
       <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
-        <h3 style={{ color: COLORS.accent }}>Користувачі системи</h3>
+        <h3 style={{ color: COLORS.accent }}>Додати нового користувача</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+          <div>
+            <label style={{ color: COLORS.text, fontSize: '12px' }}>Ім'я:</label>
+            <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Введіть ім'я" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button onClick={handleAddUser} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+              Додати користувача
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
+        <h3 style={{ color: COLORS.accent }}>Допущені користувачі</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <thead>
+            <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
+              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Ім'я</th>
+              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Статус реєстрації</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allowedUsers.map(user => {
+              const isRegistered = users.find(u => u.name === user.name);
+              return (
+                <tr key={user.name} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{user.name}</td>
+                  <td style={{ padding: '8px', color: isRegistered ? COLORS.inbound : COLORS.outbound }}>
+                    {isRegistered ? '✅ Зареєстрований' : '⏳ Очікує реєстрації'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
+        <h3 style={{ color: COLORS.accent }}>Активні користувачі</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
             <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
@@ -1196,10 +1280,11 @@ function AdminPanel({ users, onDeleteUser }) {
       <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}` }}>
         <h3 style={{ color: COLORS.accent }}>Інформація</h3>
         <p style={{ color: COLORS.text, fontSize: '12px', lineHeight: '1.6' }}>
-          ✅ Кожен користувач створює свій <strong>унікальний пароль</strong> при першому вході.<br/>
-          ✅ Паролі <strong>не видні</strong> адміністратору (навіть вам).<br/>
-          ✅ Видаліть користувача якщо він більше не працює в компанії.<br/>
-          ✅ <strong>Журнал аудиту</strong> зберігає всі дії користувачів - невозможно скрити або змінити операції.
+          ✅ Додавай нових користувачів в список.<br/>
+          ✅ Кожен вибирає своє ім'я при першому вході.<br/>
+          ✅ Кожен створює свій унікальний пароль.<br/>
+          ✅ Паролі не видні навіть тобі (адміну).<br/>
+          ✅ Журнал аудиту зберігає всі дії - неможливо скрити або змінити.
         </p>
       </div>
     </div>
