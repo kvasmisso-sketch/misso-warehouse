@@ -727,48 +727,217 @@ export default function App() {
 
         {!loading && activeTab === 'dashboard' && (
           <div>
-            <h2 style={{ color: COLORS.accent }}>Огляд</h2>
-            <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ color: COLORS.accent }}>🔄 ПОТІК ТОВАРУ</h3>
+            <h2 style={{ color: COLORS.accent }}>📊 Огляд</h2>
+            
+            {/* KPI КАРТОЧКИ */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              {/* Карточка 1: В ДОРОЗІ */}
+              <div style={{
+                backgroundColor: COLORS.header,
+                border: `2px solid ${COLORS.accent}`,
+                borderRadius: '12px',
+                padding: '25px',
+                boxShadow: `0 8px 32px rgba(79, 195, 247, 0.15)`,
+                transition: 'all 0.3s'
+              }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>📦 З ГОДИНИ В ПОЛЬЩУ</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px' }}>
+                  <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.accent }}>0</h3>
+                  <span style={{ color: COLORS.text, opacity: 0.6 }}>боксів</span>
+                </div>
+                <div style={{ height: '6px', backgroundColor: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '0%', backgroundColor: COLORS.accent, borderRadius: '3px' }}></div>
+                </div>
+              </div>
+
+              {/* Карточка 2: НА СКЛАДЕ */}
+              <div style={{
+                backgroundColor: COLORS.header,
+                border: `2px solid ${COLORS.inbound}`,
+                borderRadius: '12px',
+                padding: '25px',
+                boxShadow: `0 8px 32px rgba(46, 160, 67, 0.15)`,
+                transition: 'all 0.3s'
+              }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>🏭 СКЛАДСЬКЕ ПОЛЬЩА</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px' }}>
+                  <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.inbound }}>0</h3>
+                  <span style={{ color: COLORS.text, opacity: 0.6 }}>боксів</span>
+                </div>
+                <div style={{ height: '6px', backgroundColor: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '0%', backgroundColor: COLORS.inbound, borderRadius: '3px' }}></div>
+                </div>
+              </div>
+
+              {/* Карточка 3: У ДОСТАВЦІ */}
+              <div style={{
+                backgroundColor: COLORS.header,
+                border: `2px solid ${COLORS.outbound}`,
+                borderRadius: '12px',
+                padding: '25px',
+                boxShadow: `0 8px 32px rgba(192, 57, 43, 0.15)`,
+                transition: 'all 0.3s'
+              }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>🚚 У ДОСТАВЦІ КЛІЄНТАМ</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px' }}>
+                  <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.outbound }}>0</h3>
+                  <span style={{ color: COLORS.text, opacity: 0.6 }}>боксів</span>
+                </div>
+                <div style={{ height: '6px', backgroundColor: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '0%', backgroundColor: COLORS.outbound, borderRadius: '3px' }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* SANKEY ДІАГРАМА ПОТОКУ */}
+            <div style={{
+              backgroundColor: COLORS.header,
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: '12px',
+              padding: '30px',
+              marginBottom: '40px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+            }}>
+              <h3 style={{ margin: '0 0 30px 0', color: COLORS.accent, fontSize: '18px' }}>🔄 ПОТОК ТОВАРУ</h3>
               
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: COLORS.accent }}>📍 ua→pl (З України до Польщі - В ДОРОЗІ)</h4>
-                {Object.entries(productsByLocation).map(([category, data]) => (
-                  data.uaToPl > 0 && (
-                    <div key={category} style={{ padding: '10px', backgroundColor: COLORS.header, marginBottom: '10px', borderRadius: '4px', border: `1px solid ${COLORS.border}` }}>
-                      <span style={{ color: COLORS.text }}>{data.name}: {data.uaToPl} боксів ({data.uaToPl * data.itemsPerBox} {data.itemsPerBox === 120 ? 'bars' : 'pieces'})</span>
-                    </div>
-                  )
-                ))}
-                {Object.values(productsByLocation).every(d => d.uaToPl === 0) && (
-                  <p style={{ color: COLORS.text, opacity: 0.5 }}>Немає товару в дорозі</p>
-                )}
+              {/* SANKEY ДІАГРАМА */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>
+                {/* ЕТАП 1: УКРАЇНА */}
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                  <div style={{
+                    backgroundColor: COLORS.bg,
+                    border: `2px solid ${COLORS.accent}`,
+                    borderRadius: '8px',
+                    padding: '20px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.text, opacity: 0.7 }}>УКРАЇНА</p>
+                    <h4 style={{ margin: 0, fontSize: '32px', color: COLORS.accent, fontWeight: 'bold' }}>0</h4>
+                    <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
+                  </div>
+                </div>
+
+                {/* СТРІЛКА 1 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '80px', justifyContent: 'center' }}>
+                  <div style={{ height: '3px', flex: 1, backgroundColor: COLORS.accent }}></div>
+                  <span style={{ color: COLORS.accent, fontSize: '20px' }}>→</span>
+                </div>
+
+                {/* ЕТАП 2: СКЛАД */}
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                  <div style={{
+                    backgroundColor: COLORS.bg,
+                    border: `2px solid ${COLORS.inbound}`,
+                    borderRadius: '8px',
+                    padding: '20px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.text, opacity: 0.7 }}>СКЛАД PL</p>
+                    <h4 style={{ margin: 0, fontSize: '32px', color: COLORS.inbound, fontWeight: 'bold' }}>0</h4>
+                    <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
+                  </div>
+                </div>
+
+                {/* СТРІЛКА 2 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '80px', justifyContent: 'center' }}>
+                  <div style={{ height: '3px', flex: 1, backgroundColor: COLORS.inbound }}></div>
+                  <span style={{ color: COLORS.inbound, fontSize: '20px' }}>→</span>
+                </div>
+
+                {/* ЕТАП 3: КЛІЄНТИ */}
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                  <div style={{
+                    backgroundColor: COLORS.bg,
+                    border: `2px solid ${COLORS.outbound}`,
+                    borderRadius: '8px',
+                    padding: '20px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.text, opacity: 0.7 }}>КЛІЄНТИ</p>
+                    <h4 style={{ margin: 0, fontSize: '32px', color: COLORS.outbound, fontWeight: 'bold' }}>0</h4>
+                    <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
+                  </div>
+                </div>
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: COLORS.accent }}>📍 Warehouse PL (Складське Польща - ПОТОЧНІ ОСТАТКИ)</h4>
-                {Object.entries(productsByLocation).map(([category, data]) => {
-                  const status = getStatusColor(data.warehouse);
-                  return (
-                    <div key={category} style={{ padding: '10px', backgroundColor: COLORS.header, marginBottom: '10px', borderRadius: '4px', border: `1px solid ${COLORS.border}` }}>
-                      <span style={{ color: COLORS.text }}>{data.name}: {data.warehouse} боксів ({data.warehouse * data.itemsPerBox} {data.itemsPerBox === 120 ? 'bars' : 'pieces'}) <span style={{ color: status.color }}>{status.label}</span></span>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* ДЕТАЛЬНА ІНФОРМАЦІЯ ПО ТОВАРАМ */}
+              <h4 style={{ margin: '0 0 20px 0', color: COLORS.accent, fontSize: '14px' }}>📦 Деталі по товарам:</h4>
+              
+              {Object.entries(productsByLocation).length === 0 ? (
+                <p style={{ color: COLORS.text, opacity: 0.5, textAlign: 'center', padding: '40px 0' }}>📭 Немає товару на складі</p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
+                  {Object.entries(productsByLocation).map(([category, data]) => {
+                    const warehousePercent = Math.min(100, (data.warehouse / 3) * 100);
+                    const status = getStatusColor(data.warehouse);
+                    
+                    return (
+                      <div key={category} style={{
+                        backgroundColor: COLORS.bg,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: '8px',
+                        padding: '15px',
+                        borderLeft: `4px solid ${status.color}`
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                          <div>
+                            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: COLORS.text, fontSize: '14px' }}>{data.name}</p>
+                            <p style={{ margin: 0, fontSize: '12px', color: COLORS.text, opacity: 0.6 }}>
+                              ua→pl: {data.uaToPl} | Склад: {data.warehouse} | Клієнти: {data.clients}
+                            </p>
+                          </div>
+                          <span style={{ color: status.color, fontWeight: 'bold', fontSize: '12px' }}>{status.label}</span>
+                        </div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ height: '4px', backgroundColor: COLORS.border, borderRadius: '2px', marginBottom: '5px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${Math.min(100, (data.uaToPl / 2) * 100)}%`, backgroundColor: COLORS.accent }}></div>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '10px', color: COLORS.text, opacity: 0.6 }}>{data.uaToPl} б.</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ height: '4px', backgroundColor: COLORS.border, borderRadius: '2px', marginBottom: '5px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${warehousePercent}%`, backgroundColor: COLORS.inbound }}></div>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '10px', color: COLORS.text, opacity: 0.6 }}>{data.warehouse} б.</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ height: '4px', backgroundColor: COLORS.border, borderRadius: '2px', marginBottom: '5px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${Math.min(100, (data.clients / 2) * 100)}%`, backgroundColor: COLORS.outbound }}></div>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '10px', color: COLORS.text, opacity: 0.6 }}>{data.clients} б.</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: COLORS.accent }}>📍 PL→Clients (До Клієнтів - В ДОСТАВЦІ)</h4>
-                {Object.entries(productsByLocation).map(([category, data]) => (
-                  data.clients > 0 && (
-                    <div key={category} style={{ padding: '10px', backgroundColor: COLORS.header, marginBottom: '10px', borderRadius: '4px', border: `1px solid ${COLORS.border}` }}>
-                      <span style={{ color: COLORS.text }}>{data.name}: {data.clients} боксів ({data.clients * data.itemsPerBox} {data.itemsPerBox === 120 ? 'bars' : 'pieces'})</span>
-                    </div>
-                  )
-                ))}
-                {Object.values(productsByLocation).every(d => d.clients === 0) && (
-                  <p style={{ color: COLORS.text, opacity: 0.5 }}>Немає товару в доставці</p>
-                )}
+            {/* ЛЕГЕНДА */}
+            <div style={{
+              backgroundColor: COLORS.header,
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: '8px',
+              padding: '15px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '15px',
+              fontSize: '12px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: COLORS.inbound }}></span>
+                <span style={{ color: COLORS.text }}>🟢 OK - ≥ 2 бокса</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ff9800' }}></span>
+                <span style={{ color: COLORS.text }}>🟡 LOW - = 1 бокс</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: COLORS.outbound }}></span>
+                <span style={{ color: COLORS.text }}>🔴 CRITICAL - < 1 бокса</span>
               </div>
             </div>
           </div>
