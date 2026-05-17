@@ -16,20 +16,20 @@ const COLORS = {
 };
 
 const MISSO_PRODUCTS = {
-  'FITBAR-MC-30': { name: 'FITBAR Mango+Cashew 30g', sku: 'FITBAR-MC-30', category: 'FITBAR' },
-  'FITBAR-DH-30': { name: 'FITBAR Date+Hazelnut 30g', sku: 'FITBAR-DH-30', category: 'FITBAR' },
-  'FITBAR-FH-30': { name: 'FITBAR Fig+Hazelnut 30g', sku: 'FITBAR-FH-30', category: 'FITBAR' },
-  'FITBAR-CA-30': { name: 'FITBAR Cranberry+Almond 30g', sku: 'FITBAR-CA-30', category: 'FITBAR' },
-  'FITBAR-CUA-30': { name: 'FITBAR Currant+Almond 30g', sku: 'FITBAR-CUA-30', category: 'FITBAR' },
-  'BITE-CAC-180': { name: 'Bite Cherry+Almond in Chocolate 180g', sku: 'BITE-CAC-180', category: 'Bite 180g' },
-  'BITE-P-180': { name: 'Bite Pistachio 180g', sku: 'BITE-P-180', category: 'Bite 180g' },
-  'BITE-TN-180': { name: 'Bite Three Nuts 180g', sku: 'BITE-TN-180', category: 'Bite 180g' },
-  'BITE-CAC-45': { name: 'Bite Cherry+Almond in Chocolate 45g', sku: 'BITE-CAC-45', category: 'Bite 45g' },
-  'BITE-P-45': { name: 'Bite Pistachio 45g', sku: 'BITE-P-45', category: 'Bite 45g' },
-  'BITE-TN-45': { name: 'Bite Three Nuts 45g', sku: 'BITE-TN-45', category: 'Bite 45g' },
-  'MANGO-500': { name: 'Mango 500g without sugar', sku: 'MANGO-500', category: 'Mango' },
-  'MANGO-250': { name: 'Mango 250g without sugar', sku: 'MANGO-250', category: 'Mango' },
-  'MANGO-125': { name: 'Mango in Chocolate 125g', sku: 'MANGO-125', category: 'Mango' }
+  'FITBAR-MC-30': { name: 'FITBAR Mango+Cashew 30g', sku: 'FITBAR-MC-30', category: 'FITBAR BARS' },
+  'FITBAR-DH-30': { name: 'FITBAR Date+Hazelnut 30g', sku: 'FITBAR-DH-30', category: 'FITBAR BARS' },
+  'FITBAR-FH-30': { name: 'FITBAR Fig+Hazelnut 30g', sku: 'FITBAR-FH-30', category: 'FITBAR BARS' },
+  'FITBAR-CA-30': { name: 'FITBAR Cranberry+Almond 30g', sku: 'FITBAR-CA-30', category: 'FITBAR BARS' },
+  'FITBAR-CUA-30': { name: 'FITBAR Currant+Almond 30g', sku: 'FITBAR-CUA-30', category: 'FITBAR BARS' },
+  'BITE-CAC-180': { name: 'Bite Cherry+Almond in Chocolate 180g', sku: 'BITE-CAC-180', category: 'BITE CANDIES 180g' },
+  'BITE-P-180': { name: 'Bite Pistachio 180g', sku: 'BITE-P-180', category: 'BITE CANDIES 180g' },
+  'BITE-TN-180': { name: 'Bite Three Nuts 180g', sku: 'BITE-TN-180', category: 'BITE CANDIES 180g' },
+  'BITE-CAC-45': { name: 'Bite Cherry+Almond in Chocolate 45g', sku: 'BITE-CAC-45', category: 'BITE CANDIES 45g' },
+  'BITE-P-45': { name: 'Bite Pistachio 45g', sku: 'BITE-P-45', category: 'BITE CANDIES 45g' },
+  'BITE-TN-45': { name: 'Bite Three Nuts 45g', sku: 'BITE-TN-45', category: 'BITE CANDIES 45g' },
+  'MANGO-500': { name: 'MANGO 500g', sku: 'MANGO-500', category: 'MANGO' },
+  'MANGO-250': { name: 'MANGO 250g', sku: 'MANGO-250', category: 'MANGO' },
+  'MANGO-125': { name: 'MANGO 125g in Chocolate', sku: 'MANGO-125', category: 'MANGO' }
 };
 
 async function hashPassword(password) {
@@ -382,6 +382,7 @@ export default function App() {
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
   const [allowedUsers, setAllowedUsers] = useState([]);
+  const [productConfig, setProductConfig] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -414,7 +415,7 @@ export default function App() {
   async function loadAllData() {
     setLoading(true);
     try {
-      const [inboundData, outboundData, stockData, movementData, auditData, clientsData, usersData, allowedUsersData] = await Promise.all([
+      const [inboundData, outboundData, stockData, movementData, auditData, clientsData, usersData, allowedUsersData, productConfigData] = await Promise.all([
         supabase.from('inbound').select('*').order('created_at', { ascending: false }),
         supabase.from('outbound').select('*').order('created_at', { ascending: false }),
         supabase.from('stock').select('*'),
@@ -422,21 +423,35 @@ export default function App() {
         supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('clients').select('*').order('name', { ascending: true }),
         supabase.from('users').select('id, name, is_admin, created_at'),
-        supabase.from('allowed_users').select('*').order('name', { ascending: true })
+        supabase.from('allowed_users').select('*').order('name', { ascending: true }),
+        supabase.from('product_config').select('*')
       ]);
 
       if (inboundData.data) setInbound(inboundData.data);
-      if (outboundData.data) setOutbound(outboundData.data);
+      if (outboundData.data) {
+        const nowMinus7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const filtered = outboundData.data.filter(item => {
+          if (!item.sent_at) return true;
+          return new Date(item.sent_at) > nowMinus7Days;
+        });
+        setOutbound(filtered);
+      }
       if (stockData.data) setStock(stockData.data);
       if (movementData.data) setMovements(movementData.data);
       if (auditData.data) setAuditLog(auditData.data);
       if (clientsData.data) setClients(clientsData.data);
       if (usersData.data) setUsers(usersData.data);
       if (allowedUsersData.data) setAllowedUsers(allowedUsersData.data);
+      if (productConfigData.data) setProductConfig(productConfigData.data);
     } catch (err) {
       console.error('Помилка завантаження:', err);
     }
     setLoading(false);
+  }
+
+  function getItemsPerBox(sku) {
+    const config = productConfig.find(p => p.product_sku === sku);
+    return config ? config.items_per_box : 120;
   }
 
   async function logAudit(action, tableName, details, oldValue = null, newValue = null) {
@@ -455,11 +470,54 @@ export default function App() {
   }
 
   function getDashboardStats() {
-    const totalInbound = inbound.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const totalOutbound = outbound.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const totalStock = stock.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const criticalItems = stock.filter(item => item.quantity < 10).length;
-    return { totalInbound, totalOutbound, totalStock, criticalItems };
+    const uaToPlInbound = inbound.filter(item => !item.received_at_warehouse).reduce((sum, item) => sum + (item.transport_boxes || 0), 0);
+    const warehousePL = stock.reduce((sum, item) => sum + (item.transport_boxes || 0), 0);
+    const clientsOut = outbound.reduce((sum, item) => sum + (item.transport_boxes || 0), 0);
+    return { uaToPlInbound, warehousePL, clientsOut };
+  }
+
+  function getProductsByLocation() {
+    const byCategory = {};
+    
+    Object.keys(MISSO_PRODUCTS).forEach(sku => {
+      const category = MISSO_PRODUCTS[sku].category;
+      if (!byCategory[category]) {
+        byCategory[category] = {
+          sku,
+          name: MISSO_PRODUCTS[sku].name,
+          uaToPl: 0,
+          warehouse: 0,
+          clients: 0,
+          itemsPerBox: getItemsPerBox(sku)
+        };
+      }
+    });
+
+    inbound.forEach(item => {
+      if (!item.received_at_warehouse && byCategory[MISSO_PRODUCTS[item.product_sku]?.category]) {
+        byCategory[MISSO_PRODUCTS[item.product_sku]?.category].uaToPl += item.transport_boxes || 0;
+      }
+    });
+
+    stock.forEach(item => {
+      if (byCategory[MISSO_PRODUCTS[item.product_sku]?.category]) {
+        byCategory[MISSO_PRODUCTS[item.product_sku]?.category].warehouse += item.transport_boxes || 0;
+      }
+    });
+
+    outbound.forEach(item => {
+      if (byCategory[MISSO_PRODUCTS[item.product_sku]?.category]) {
+        byCategory[MISSO_PRODUCTS[item.product_sku]?.category].clients += item.transport_boxes || 0;
+      }
+    });
+
+    return byCategory;
+  }
+
+  function getStatusColor(boxes) {
+    if (boxes < 1) return { color: COLORS.outbound, label: 'CRITICAL 🔴' };
+    if (boxes === 1) return { color: '#ff9800', label: 'LOW 🟡' };
+    return { color: COLORS.inbound, label: 'OK 🟢' };
   }
 
   async function addInbound(formData) {
@@ -471,23 +529,24 @@ export default function App() {
       if (existingStock) {
         await supabase
           .from('stock')
-          .update({ quantity: existingStock.quantity + formData.quantity })
+          .update({ transport_boxes: existingStock.transport_boxes + formData.transport_boxes })
           .eq('product_sku', formData.product_sku);
       } else {
         await supabase.from('stock').insert([{
           product_sku: formData.product_sku,
-          quantity: formData.quantity
+          transport_boxes: formData.transport_boxes,
+          quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku)
         }]);
       }
 
       await supabase.from('movements').insert([{
         type: 'INBOUND',
         product_sku: formData.product_sku,
-        quantity: formData.quantity,
-        notes: `Надійшло з України: ${formData.quantity} од.`
+        quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku),
+        notes: `Sent from ua: ${formData.transport_boxes} boxes`
       }]);
 
-      await logAudit('ДОДАВ', 'inbound', `Додав ${formData.quantity} од. ${formData.product_sku}`, null, formData.quantity);
+      await logAudit('ДОДАВ', 'inbound', `Додав ${formData.transport_boxes} боксів ${formData.product_sku}`, null, formData.transport_boxes);
       
       loadAllData();
       alert('✅ Товар успішно додано!');
@@ -497,12 +556,29 @@ export default function App() {
     }
   }
 
+  async function receiveAtWarehouse(inboundId, inboundData) {
+    try {
+      await supabase
+        .from('inbound')
+        .update({ received_at_warehouse: new Date().toISOString() })
+        .eq('id', inboundId);
+
+      await logAudit('ПРИЙНЯВ', 'inbound', `Прийняв ${inboundData.transport_boxes} боксів ${inboundData.product_sku} на Warehouse PL`, null, 'Received');
+      
+      loadAllData();
+      alert('✅ Товар успішно прийнято на Warehouse PL!');
+    } catch (err) {
+      console.error('Помилка:', err);
+      alert('❌ Помилка при приймані!');
+    }
+  }
+
   async function addOutbound(formData) {
     try {
       const currentStock = stock.find(s => s.product_sku === formData.product_sku);
       
-      if (!currentStock || currentStock.quantity < formData.quantity) {
-        alert(`❌ Недостатньо товару! На складі: ${currentStock?.quantity || 0} од., а ви хочете відправити: ${formData.quantity} од.`);
+      if (!currentStock || currentStock.transport_boxes < formData.transport_boxes) {
+        alert(`❌ Недостатньо товару! На складі: ${currentStock?.transport_boxes || 0} боксів, а ви хочете відправити: ${formData.transport_boxes} боксів`);
         return;
       }
 
@@ -510,17 +586,17 @@ export default function App() {
 
       await supabase
         .from('stock')
-        .update({ quantity: currentStock.quantity - formData.quantity })
+        .update({ transport_boxes: currentStock.transport_boxes - formData.transport_boxes })
         .eq('product_sku', formData.product_sku);
 
       await supabase.from('movements').insert([{
         type: 'OUTBOUND',
         product_sku: formData.product_sku,
-        quantity: formData.quantity,
-        notes: `Вивезено до ${formData.client}: ${formData.quantity} од.`
+        quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku),
+        notes: `Sent to ${formData.client}: ${formData.transport_boxes} boxes`
       }]);
 
-      await logAudit('ВІДПРАВИВ', 'outbound', `Відправив ${formData.quantity} од. до ${formData.client}`, currentStock.quantity, currentStock.quantity - formData.quantity);
+      await logAudit('ВІДПРАВИВ', 'outbound', `Відправив ${formData.transport_boxes} боксів до ${formData.client}`, currentStock.transport_boxes, currentStock.transport_boxes - formData.transport_boxes);
       
       loadAllData();
       alert('✅ Товар успішно відправлено!');
@@ -587,10 +663,12 @@ export default function App() {
   }
 
   const stats = getDashboardStats();
+  const productsByLocation = getProductsByLocation();
+  
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'inbound', label: '📦 UA→PL' },
-    { id: 'outbound', label: '🚚 PL→Client' },
+    { id: 'outbound', label: '🚚 PL→Clients' },
     { id: 'stock', label: '🗃️ Stock' },
     { id: 'movements', label: '📋 Log' },
     { id: 'audit', label: '📝 Журнал' },
@@ -650,25 +728,55 @@ export default function App() {
         {!loading && activeTab === 'dashboard' && (
           <div>
             <h2 style={{ color: COLORS.accent }}>Огляд</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '15px', marginBottom: '30px' }}>
-              <StatCard title="Надходжень з України" value={stats.totalInbound} color={COLORS.inbound} />
-              <StatCard title="Вивезено клієнтам" value={stats.totalOutbound} color={COLORS.outbound} />
-              <StatCard title="Поточні запаси" value={stats.totalStock} color={COLORS.accent} />
-              <StatCard title="Критичні" value={stats.criticalItems} color={stats.criticalItems > 0 ? COLORS.outbound : COLORS.inbound} />
-            </div>
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ color: COLORS.accent }}>🔄 ПОТІК ТОВАРУ</h3>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ color: COLORS.accent }}>📍 ua→pl (З України до Польщі - В ДОРОЗІ)</h4>
+                {Object.entries(productsByLocation).map(([category, data]) => (
+                  data.uaToPl > 0 && (
+                    <div key={category} style={{ padding: '10px', backgroundColor: COLORS.header, marginBottom: '10px', borderRadius: '4px', border: `1px solid ${COLORS.border}` }}>
+                      <span style={{ color: COLORS.text }}>{data.name}: {data.uaToPl} боксів ({data.uaToPl * data.itemsPerBox} {data.itemsPerBox === 120 ? 'bars' : 'pieces'})</span>
+                    </div>
+                  )
+                ))}
+                {Object.values(productsByLocation).every(d => d.uaToPl === 0) && (
+                  <p style={{ color: COLORS.text, opacity: 0.5 }}>Немає товару в дорозі</p>
+                )}
+              </div>
 
-            <h3 style={{ color: COLORS.accent }}>Потік: Україна → Склад → Клієнти</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-              <FlowBox title="Україна" value={stats.totalInbound} color="#ff9800" />
-              <FlowBox title="Склад ПЛ" value={stats.totalStock} color={COLORS.accent} />
-              <FlowBox title="Клієнти" value={stats.totalOutbound} color={COLORS.inbound} />
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ color: COLORS.accent }}>📍 Warehouse PL (Складське Польща - ПОТОЧНІ ОСТАТКИ)</h4>
+                {Object.entries(productsByLocation).map(([category, data]) => {
+                  const status = getStatusColor(data.warehouse);
+                  return (
+                    <div key={category} style={{ padding: '10px', backgroundColor: COLORS.header, marginBottom: '10px', borderRadius: '4px', border: `1px solid ${COLORS.border}` }}>
+                      <span style={{ color: COLORS.text }}>{data.name}: {data.warehouse} боксів ({data.warehouse * data.itemsPerBox} {data.itemsPerBox === 120 ? 'bars' : 'pieces'}) <span style={{ color: status.color }}>{status.label}</span></span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ color: COLORS.accent }}>📍 PL→Clients (До Клієнтів - В ДОСТАВЦІ)</h4>
+                {Object.entries(productsByLocation).map(([category, data]) => (
+                  data.clients > 0 && (
+                    <div key={category} style={{ padding: '10px', backgroundColor: COLORS.header, marginBottom: '10px', borderRadius: '4px', border: `1px solid ${COLORS.border}` }}>
+                      <span style={{ color: COLORS.text }}>{data.name}: {data.clients} боксів ({data.clients * data.itemsPerBox} {data.itemsPerBox === 120 ? 'bars' : 'pieces'})</span>
+                    </div>
+                  )
+                ))}
+                {Object.values(productsByLocation).every(d => d.clients === 0) && (
+                  <p style={{ color: COLORS.text, opacity: 0.5 }}>Немає товару в доставці</p>
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {!loading && activeTab === 'inbound' && <InboundTab inbound={inbound} products={MISSO_PRODUCTS} onAdd={addInbound} currentUser={currentUser} isAdmin={isAdmin} onEdit={editOperation} onDelete={deleteOperation} editingId={editingId} setEditingId={setEditingId} editValues={editValues} setEditValues={setEditValues} />}
-        {!loading && activeTab === 'outbound' && <OutboundTab outbound={outbound} products={MISSO_PRODUCTS} clients={clients} stock={stock} onAdd={addOutbound} currentUser={currentUser} isAdmin={isAdmin} onEdit={editOperation} onDelete={deleteOperation} editingId={editingId} setEditingId={setEditingId} editValues={editValues} setEditValues={setEditValues} />}
-        {!loading && activeTab === 'stock' && <StockTab stock={stock} products={MISSO_PRODUCTS} />}
+        {!loading && activeTab === 'inbound' && <InboundTab inbound={inbound} products={MISSO_PRODUCTS} productConfig={productConfig} onAdd={addInbound} onReceive={receiveAtWarehouse} currentUser={currentUser} isAdmin={isAdmin} onEdit={editOperation} onDelete={deleteOperation} editingId={editingId} setEditingId={setEditingId} editValues={editValues} setEditValues={setEditValues} />}
+        {!loading && activeTab === 'outbound' && <OutboundTab outbound={outbound} products={MISSO_PRODUCTS} productConfig={productConfig} clients={clients} stock={stock} onAdd={addOutbound} currentUser={currentUser} isAdmin={isAdmin} onEdit={editOperation} onDelete={deleteOperation} editingId={editingId} setEditingId={setEditingId} editValues={editValues} setEditValues={setEditValues} />}
+        {!loading && activeTab === 'stock' && <StockTab stock={stock} products={MISSO_PRODUCTS} productConfig={productConfig} />}
         {!loading && activeTab === 'movements' && <MovementsTab movements={movements} products={MISSO_PRODUCTS} />}
         {!loading && activeTab === 'audit' && <AuditTab auditLog={auditLog} />}
         {!loading && activeTab === 'products' && <ProductsTab products={MISSO_PRODUCTS} />}
@@ -725,41 +833,28 @@ export default function App() {
   );
 }
 
-function StatCard({ title, value, color }) {
-  return (
-    <div style={{ backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: '20px', borderRadius: '6px', textAlign: 'center', borderLeft: `4px solid ${color}` }}>
-      <p style={{ margin: '0 0 10px 0', fontSize: '12px', opacity: 0.7 }}>{title}</p>
-      <h3 style={{ margin: 0, fontSize: '32px', color: color }}>{value}</h3>
-    </div>
-  );
-}
-
-function FlowBox({ title, value, color }) {
-  return (
-    <div style={{ backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: '25px', borderRadius: '6px', textAlign: 'center' }}>
-      <h3 style={{ margin: 0, color: COLORS.accent }}>{title}</h3>
-      <p style={{ margin: '15px 0 0 0', fontSize: '28px', fontWeight: 'bold', color: color }}>{value} од.</p>
-    </div>
-  );
-}
-
-function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, onDelete, editingId, setEditingId, editValues, setEditValues }) {
+function InboundTab({ inbound, products, productConfig, onAdd, onReceive, currentUser, isAdmin, onEdit, onDelete, editingId, setEditingId, editValues, setEditValues }) {
   const [sku, setSku] = useState('FITBAR-MC-30');
-  const [quantity, setQuantity] = useState(100);
+  const [boxes, setBoxes] = useState(1);
+
+  const getItemsPerBox = (skuVal) => {
+    const config = productConfig.find(p => p.product_sku === skuVal);
+    return config ? config.items_per_box : 120;
+  };
 
   const handleAdd = async () => {
-    if (quantity <= 0) {
-      alert('Кількість має бути більше 0!');
+    if (boxes <= 0) {
+      alert('Кількість боксів має бути більше 0!');
       return;
     }
     await onAdd({
       product_sku: sku,
-      quantity: parseInt(quantity),
-      origin: 'Україна',
-      status: 'received',
+      transport_boxes: parseInt(boxes),
+      origin: 'ua',
+      status: 'sent',
       user_name: currentUser
     });
-    setQuantity(100);
+    setBoxes(1);
   };
 
   return (
@@ -776,8 +871,9 @@ function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, on
             </select>
           </div>
           <div>
-            <label style={{ color: COLORS.text, fontSize: '12px' }}>Кількість:</label>
-            <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <label style={{ color: COLORS.text, fontSize: '12px' }}>Кількість боксів:</label>
+            <input type="number" value={boxes} onChange={(e) => setBoxes(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.accent }}>({boxes * getItemsPerBox(sku)} {getItemsPerBox(sku) === 120 ? 'bars' : 'pieces'})</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
             <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
@@ -794,13 +890,14 @@ function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, on
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дата</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Користувач</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
-            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Боксів</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Статус</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дія</th>
           </tr>
         </thead>
         <tbody>
           {inbound.length === 0 ? (
-            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
+            <tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
           ) : (
             inbound.slice(0, 20).map((item) => (
               editingId === item.id ? (
@@ -809,8 +906,9 @@ function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, on
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
                   <td style={{ padding: '8px', textAlign: 'center' }}>
-                    <input type="number" value={editValues.quantity || item.quantity} onChange={(e) => setEditValues({...editValues, quantity: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
+                    <input type="number" value={editValues.transport_boxes || item.transport_boxes} onChange={(e) => setEditValues({...editValues, transport_boxes: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
                   </td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.received_at_warehouse ? '✅ Прийнято' : '⏳ В дорозі'}</td>
                   <td style={{ padding: '8px' }}>
                     <button onClick={() => onEdit(item.id, 'inbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
                     <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
@@ -821,11 +919,17 @@ function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, on
                   <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
+                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
+                  <td style={{ padding: '8px', color: COLORS.text }}>{item.received_at_warehouse ? '✅ Прийнято' : '⏳ В дорозі'}</td>
                   <td style={{ padding: '8px' }}>
+                    {!item.received_at_warehouse && (
+                      <button onClick={() => onReceive(item.id, item)} style={{ padding: '4px 8px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>
+                        Received at Warehouse PL
+                      </button>
+                    )}
                     {(currentUser === item.user_name || isAdmin) && (
                       <>
-                        <button onClick={() => { setEditingId(item.id); setEditValues({quantity: item.quantity}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
+                        <button onClick={() => { setEditingId(item.id); setEditValues({transport_boxes: item.transport_boxes}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
                         <button onClick={() => onDelete(item.id, 'inbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
                       </>
                     )}
@@ -840,32 +944,43 @@ function InboundTab({ inbound, products, onAdd, currentUser, isAdmin, onEdit, on
   );
 }
 
-function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, isAdmin, onEdit, onDelete, editingId, setEditingId, editValues, setEditValues }) {
+function OutboundTab({ outbound, products, productConfig, clients, stock, onAdd, currentUser, isAdmin, onEdit, onDelete, editingId, setEditingId, editValues, setEditValues }) {
   const [sku, setSku] = useState('FITBAR-MC-30');
-  const [quantity, setQuantity] = useState(50);
+  const [boxes, setBoxes] = useState(1);
   const [client, setClient] = useState(clients.length > 0 ? clients[0].name : '');
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const getItemsPerBox = (skuVal) => {
+    const config = productConfig.find(p => p.product_sku === skuVal);
+    return config ? config.items_per_box : 120;
+  };
 
   const currentStock = stock.find(s => s.product_sku === sku);
-  const availableQty = currentStock?.quantity || 0;
+  const availableBoxes = currentStock?.transport_boxes || 0;
 
   const handleAdd = async () => {
-    if (quantity <= 0) {
-      alert('Кількість має бути більше 0!');
+    if (boxes <= 0) {
+      alert('Кількість боксів має бути більше 0!');
       return;
     }
     if (!client) {
       alert('Виберіть клієнта!');
       return;
     }
+    setShowConfirm(true);
+  };
+
+  const confirmSend = async () => {
+    setShowConfirm(false);
     await onAdd({
       product_sku: sku,
-      quantity: parseInt(quantity),
+      transport_boxes: parseInt(boxes),
       client,
-      destination: 'Польща',
+      destination: 'PL',
       status: 'shipped',
       user_name: currentUser
     });
-    setQuantity(50);
+    setBoxes(1);
   };
 
   return (
@@ -880,13 +995,14 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
                 <option key={key} value={key}>{val.name}</option>
               ))}
             </select>
-            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: availableQty < 20 ? COLORS.outbound : COLORS.inbound }}>
-              На складі: {availableQty} од.
+            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: availableBoxes < 2 ? COLORS.outbound : COLORS.inbound }}>
+              На складі: {availableBoxes} боксів
             </p>
           </div>
           <div>
-            <label style={{ color: COLORS.text, fontSize: '12px' }}>К-сть:</label>
-            <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <label style={{ color: COLORS.text, fontSize: '12px' }}>Кількість боксів:</label>
+            <input type="number" value={boxes} onChange={(e) => setBoxes(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.accent }}>({boxes * getItemsPerBox(sku)} {getItemsPerBox(sku) === 120 ? 'bars' : 'pieces'})</p>
           </div>
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Клієнт:</label>
@@ -908,6 +1024,17 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
         </div>
       </div>
 
+      {showConfirm && (
+        <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', marginBottom: '20px', border: `1px solid ${COLORS.border}` }}>
+          <h3 style={{ color: COLORS.accent }}>⚠️ CONFIRMATION:</h3>
+          <p style={{ color: COLORS.text }}>Product: {sku}</p>
+          <p style={{ color: COLORS.text }}>Transport boxes: {boxes} ({boxes * getItemsPerBox(sku)} {getItemsPerBox(sku) === 120 ? 'bars' : 'pieces'})</p>
+          <p style={{ color: COLORS.text }}>Client: {client}</p>
+          <button onClick={() => setShowConfirm(false)} style={{ padding: '8px 16px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}>Cancel</button>
+          <button onClick={confirmSend} style={{ padding: '8px 16px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Confirm</button>
+        </div>
+      )}
+
       <h3 style={{ color: COLORS.accent }}>Історія</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
         <thead>
@@ -915,7 +1042,7 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дата</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Користувач</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
-            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Боксів</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Клієнт</th>
             <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дія</th>
           </tr>
@@ -931,7 +1058,7 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
                   <td style={{ padding: '8px', textAlign: 'center' }}>
-                    <input type="number" value={editValues.quantity || item.quantity} onChange={(e) => setEditValues({...editValues, quantity: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
+                    <input type="number" value={editValues.transport_boxes || item.transport_boxes} onChange={(e) => setEditValues({...editValues, transport_boxes: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
                   </td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
                   <td style={{ padding: '8px' }}>
@@ -944,12 +1071,12 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
                   <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
+                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
                   <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
                   <td style={{ padding: '8px' }}>
                     {(currentUser === item.user_name || isAdmin) && (
                       <>
-                        <button onClick={() => { setEditingId(item.id); setEditValues({quantity: item.quantity}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
+                        <button onClick={() => { setEditingId(item.id); setEditValues({transport_boxes: item.transport_boxes}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
                         <button onClick={() => onDelete(item.id, 'outbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
                       </>
                     )}
@@ -964,39 +1091,47 @@ function OutboundTab({ outbound, products, clients, stock, onAdd, currentUser, i
   );
 }
 
-function StockTab({ stock, products }) {
+function StockTab({ stock, products, productConfig }) {
+  const getItemsPerBox = (sku) => {
+    const config = productConfig.find(p => p.product_sku === sku);
+    return config ? config.items_per_box : 120;
+  };
+
+  const getStatus = (boxes) => {
+    if (boxes < 1) return { color: '#c0392b', label: 'CRITICAL 🔴' };
+    if (boxes === 1) return { color: '#ff9800', label: 'LOW 🟡' };
+    return { color: '#2ea043', label: 'OK 🟢' };
+  };
+
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>🗃️ Запаси</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
+      <h2 style={{ color: '#4fc3f7' }}>🗃️ Запаси</h2>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#0f1623', border: '1px solid #1e2a3a', fontSize: '12px' }}>
         <thead>
-          <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>SKU</th>
-            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Продукт</th>
-            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
-            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Статус</th>
+          <tr style={{ backgroundColor: '#0a0f1a', borderBottom: '1px solid #1e2a3a' }}>
+            <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>SKU</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Продукт</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: '#4fc3f7' }}>Боксів</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: '#4fc3f7' }}>Статус</th>
           </tr>
         </thead>
         <tbody>
           {stock.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Склад порожній</td></tr>
+            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Склад порожній</td></tr>
           ) : (
-            stock.map((item) => (
-              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '8px', fontFamily: 'monospace', color: COLORS.accent }}>{item.product_sku}</td>
-                <td style={{ padding: '8px', color: COLORS.text }}>{products[item.product_sku]?.name || item.product_sku}</td>
-                <td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: COLORS.text }}>{item.quantity}</td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>
-                  {item.quantity < 5 ? (
-                    <span style={{ color: COLORS.outbound, fontWeight: 'bold' }}>🔴 КРИТИЧНИЙ</span>
-                  ) : item.quantity < 20 ? (
-                    <span style={{ color: '#ff9800', fontWeight: 'bold' }}>🟡 НИЗЬКИЙ</span>
-                  ) : (
-                    <span style={{ color: COLORS.inbound }}>🟢 ОК</span>
-                  )}
-                </td>
-              </tr>
-            ))
+            stock.map((item) => {
+              const status = getStatus(item.transport_boxes);
+              return (
+                <tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
+                  <td style={{ padding: '8px', fontFamily: 'monospace', color: '#4fc3f7' }}>{item.product_sku}</td>
+                  <td style={{ padding: '8px', color: '#e8edf5' }}>{products[item.product_sku]?.name || item.product_sku}</td>
+                  <td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#e8edf5' }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
+                  <td style={{ padding: '8px', textAlign: 'center', color: status.color }}>
+                    {status.label}
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
@@ -1007,39 +1142,39 @@ function StockTab({ stock, products }) {
 function MovementsTab({ movements, products }) {
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>📋 Журнал операцій</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '11px' }}>
+      <h2 style={{ color: '#4fc3f7' }}>📋 Журнал операцій</h2>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#0f1623', border: '1px solid #1e2a3a', fontSize: '11px' }}>
         <thead>
-          <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Час</th>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Тип</th>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>SKU</th>
-            <th style={{ padding: '6px', textAlign: 'center', color: COLORS.accent }}>К-сть</th>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Примітка</th>
+          <tr style={{ backgroundColor: '#0a0f1a', borderBottom: '1px solid #1e2a3a' }}>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Час</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Тип</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>SKU</th>
+            <th style={{ padding: '6px', textAlign: 'center', color: '#4fc3f7' }}>Кількість</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Примітка</th>
           </tr>
         </thead>
         <tbody>
           {movements.length === 0 ? (
-            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає записів</td></tr>
+            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає записів</td></tr>
           ) : (
             movements.slice(0, 50).map((item) => (
-              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '6px', color: COLORS.text }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+              <tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
+                <td style={{ padding: '6px', color: '#e8edf5' }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
                 <td style={{ padding: '6px' }}>
                   <span style={{ 
                     padding: '2px 6px', 
                     borderRadius: '3px', 
-                    backgroundColor: item.type === 'INBOUND' ? COLORS.inbound : COLORS.outbound,
+                    backgroundColor: item.type === 'INBOUND' ? '#2ea043' : '#c0392b',
                     color: 'white',
                     fontSize: '10px',
                     fontWeight: 'bold'
                   }}>
-                    {item.type === 'INBOUND' ? 'В' : 'З'}
+                    {item.type === 'INBOUND' ? 'IN' : 'OUT'}
                   </span>
                 </td>
-                <td style={{ padding: '6px', fontFamily: 'monospace', color: COLORS.accent, fontSize: '10px' }}>{item.product_sku}</td>
-                <td style={{ padding: '6px', textAlign: 'center', color: COLORS.text }}>{item.quantity}</td>
-                <td style={{ padding: '6px', color: COLORS.text }}>{item.notes}</td>
+                <td style={{ padding: '6px', fontFamily: 'monospace', color: '#4fc3f7', fontSize: '10px' }}>{item.product_sku}</td>
+                <td style={{ padding: '6px', textAlign: 'center', color: '#e8edf5' }}>{item.quantity}</td>
+                <td style={{ padding: '6px', color: '#e8edf5' }}>{item.notes}</td>
               </tr>
             ))
           )}
@@ -1052,26 +1187,26 @@ function MovementsTab({ movements, products }) {
 function AuditTab({ auditLog }) {
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>📝 Журнал аудиту</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '11px' }}>
+      <h2 style={{ color: '#4fc3f7' }}>📝 Журнал аудиту</h2>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#0f1623', border: '1px solid #1e2a3a', fontSize: '11px' }}>
         <thead>
-          <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Час</th>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Користувач</th>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Дія</th>
-            <th style={{ padding: '6px', textAlign: 'left', color: COLORS.accent }}>Деталі</th>
+          <tr style={{ backgroundColor: '#0a0f1a', borderBottom: '1px solid #1e2a3a' }}>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Час</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Користувач</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Дія</th>
+            <th style={{ padding: '6px', textAlign: 'left', color: '#4fc3f7' }}>Деталі</th>
           </tr>
         </thead>
         <tbody>
           {auditLog.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає записів</td></tr>
+            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає записів</td></tr>
           ) : (
             auditLog.slice(0, 100).map((item) => (
-              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '6px', color: COLORS.text }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-                <td style={{ padding: '6px', color: COLORS.accent, fontWeight: 'bold', fontSize: '10px' }}>{item.user_name}</td>
-                <td style={{ padding: '6px', color: COLORS.outbound, fontSize: '10px' }}>{item.action}</td>
-                <td style={{ padding: '6px', color: COLORS.text, fontSize: '10px' }}>{item.details}</td>
+              <tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
+                <td style={{ padding: '6px', color: '#e8edf5' }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                <td style={{ padding: '6px', color: '#4fc3f7', fontWeight: 'bold', fontSize: '10px' }}>{item.user_name}</td>
+                <td style={{ padding: '6px', color: '#c0392b', fontSize: '10px' }}>{item.action}</td>
+                <td style={{ padding: '6px', color: '#e8edf5', fontSize: '10px' }}>{item.details}</td>
               </tr>
             ))
           )}
@@ -1090,15 +1225,15 @@ function ProductsTab({ products }) {
 
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>⚙️ Каталог MISSO</h2>
+      <h2 style={{ color: '#4fc3f7' }}>⚙️ Каталог MISSO</h2>
       {Object.entries(categories).map(([cat, items]) => (
         <div key={cat} style={{ marginBottom: '30px' }}>
-          <h3 style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.border}`, paddingBottom: '10px' }}>{cat}</h3>
+          <h3 style={{ color: '#4fc3f7', borderBottom: `1px solid #1e2a3a`, paddingBottom: '10px' }}>{cat}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
             {items.map(p => (
-              <div key={p.sku} style={{ backgroundColor: COLORS.header, padding: '15px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.accent}` }}>
-                <h4 style={{ margin: '0 0 10px 0', color: COLORS.accent, fontSize: '13px' }}>{p.name}</h4>
-                <p style={{ margin: '5px 0', fontSize: '11px', color: COLORS.text, opacity: 0.7 }}>SKU: <code style={{ color: COLORS.accent }}>{p.sku}</code></p>
+              <div key={p.sku} style={{ backgroundColor: '#0f1623', padding: '15px', borderRadius: '6px', border: `1px solid #1e2a3a`, borderLeft: `3px solid #4fc3f7` }}>
+                <h4 style={{ margin: '0 0 10px 0', color: '#4fc3f7', fontSize: '13px' }}>{p.name}</h4>
+                <p style={{ margin: '5px 0', fontSize: '11px', color: '#e8edf5', opacity: 0.7 }}>SKU: <code style={{ color: '#4fc3f7' }}>{p.sku}</code></p>
               </div>
             ))}
           </div>
@@ -1124,51 +1259,51 @@ function ClientsTab({ clients, currentUser, isAdmin, onAddClient, onDeleteClient
 
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>👥 Управління клієнтами</h2>
-      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', marginBottom: '20px', border: `1px solid ${COLORS.border}` }}>
+      <h2 style={{ color: '#4fc3f7' }}>👥 Управління клієнтами</h2>
+      <div style={{ backgroundColor: '#0f1623', padding: '20px', borderRadius: '6px', marginBottom: '20px', border: `1px solid #1e2a3a` }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
           <div>
-            <label style={{ color: COLORS.text, fontSize: '12px' }}>Назва:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Biedronka" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <label style={{ color: '#e8edf5', fontSize: '12px' }}>Назва:</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Biedronka" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: '#0a0f1a', color: '#e8edf5', border: `1px solid #1e2a3a`, borderRadius: '4px' }} />
           </div>
           <div>
-            <label style={{ color: COLORS.text, fontSize: '12px' }}>Місто:</label>
-            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Варшава" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <label style={{ color: '#e8edf5', fontSize: '12px' }}>Місто:</label>
+            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Варшава" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: '#0a0f1a', color: '#e8edf5', border: `1px solid #1e2a3a`, borderRadius: '4px' }} />
           </div>
           <div>
-            <label style={{ color: COLORS.text, fontSize: '12px' }}>Контакт:</label>
-            <input type="text" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="email@example.com" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <label style={{ color: '#e8edf5', fontSize: '12px' }}>Контакт:</label>
+            <input type="text" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="email@example.com" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: '#0a0f1a', color: '#e8edf5', border: `1px solid #1e2a3a`, borderRadius: '4px' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: '#2ea043', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
               Додати
             </button>
           </div>
         </div>
       </div>
 
-      <h3 style={{ color: COLORS.accent }}>Список клієнтів</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, fontSize: '12px' }}>
+      <h3 style={{ color: '#4fc3f7' }}>Список клієнтів</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#0f1623', border: `1px solid #1e2a3a`, fontSize: '12px' }}>
         <thead>
-          <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Назва</th>
-            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Місто</th>
-            <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Контакт</th>
-            <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Дія</th>
+          <tr style={{ backgroundColor: '#0a0f1a', borderBottom: `1px solid #1e2a3a` }}>
+            <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Назва</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Місто</th>
+            <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Контакт</th>
+            <th style={{ padding: '8px', textAlign: 'center', color: '#4fc3f7' }}>Дія</th>
           </tr>
         </thead>
         <tbody>
           {clients.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає клієнтів</td></tr>
+            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає клієнтів</td></tr>
           ) : (
             clients.map((client) => (
-              <tr key={client.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '8px', color: COLORS.text }}>{client.name}</td>
-                <td style={{ padding: '8px', color: COLORS.text }}>{client.city}</td>
-                <td style={{ padding: '8px', color: COLORS.text, fontSize: '11px' }}>{client.contact || '—'}</td>
+              <tr key={client.id} style={{ borderBottom: `1px solid #1e2a3a` }}>
+                <td style={{ padding: '8px', color: '#e8edf5' }}>{client.name}</td>
+                <td style={{ padding: '8px', color: '#e8edf5' }}>{client.city}</td>
+                <td style={{ padding: '8px', color: '#e8edf5', fontSize: '11px' }}>{client.contact || '—'}</td>
                 <td style={{ padding: '8px', textAlign: 'center' }}>
                   {isAdmin && (
-                    <button onClick={() => onDeleteClient(client.id, client.name)} style={{ padding: '4px 8px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
+                    <button onClick={() => onDeleteClient(client.id, client.name)} style={{ padding: '4px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
                       Видалити
                     </button>
                   )}
@@ -1203,39 +1338,39 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
 
   return (
     <div>
-      <h2 style={{ color: COLORS.accent }}>🔐 Адміністраторська панель</h2>
+      <h2 style={{ color: '#4fc3f7' }}>🔐 Адміністраторська панель</h2>
       
-      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
-        <h3 style={{ color: COLORS.accent }}>Додати нового користувача</h3>
+      <div style={{ backgroundColor: '#0f1623', padding: '20px', borderRadius: '6px', border: `1px solid #1e2a3a`, marginBottom: '20px' }}>
+        <h3 style={{ color: '#4fc3f7' }}>Додати нового користувача</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
           <div>
-            <label style={{ color: COLORS.text, fontSize: '12px' }}>Ім'я:</label>
-            <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Введіть ім'я" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }} />
+            <label style={{ color: '#e8edf5', fontSize: '12px' }}>Ім'я:</label>
+            <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Введіть ім'я" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: '#0a0f1a', color: '#e8edf5', border: `1px solid #1e2a3a`, borderRadius: '4px' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleAddUser} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <button onClick={handleAddUser} style={{ width: '100%', padding: '8px', backgroundColor: '#2ea043', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
               Додати користувача
             </button>
           </div>
         </div>
       </div>
 
-      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
-        <h3 style={{ color: COLORS.accent }}>Допущені користувачі</h3>
+      <div style={{ backgroundColor: '#0f1623', padding: '20px', borderRadius: '6px', border: `1px solid #1e2a3a`, marginBottom: '20px' }}>
+        <h3 style={{ color: '#4fc3f7' }}>Допущені користувачі</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
-            <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Ім'я</th>
-              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Статус реєстрації</th>
+            <tr style={{ backgroundColor: '#0a0f1a', borderBottom: `1px solid #1e2a3a` }}>
+              <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Ім'я</th>
+              <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Статус реєстрації</th>
             </tr>
           </thead>
           <tbody>
             {allowedUsers.map(user => {
               const isRegistered = users.find(u => u.name === user.name);
               return (
-                <tr key={user.name} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{user.name}</td>
-                  <td style={{ padding: '8px', color: isRegistered ? COLORS.inbound : COLORS.outbound }}>
+                <tr key={user.name} style={{ borderBottom: `1px solid #1e2a3a` }}>
+                  <td style={{ padding: '8px', color: '#e8edf5' }}>{user.name}</td>
+                  <td style={{ padding: '8px', color: isRegistered ? '#2ea043' : '#c0392b' }}>
                     {isRegistered ? '✅ Зареєстрований' : '⏳ Очікує реєстрації'}
                   </td>
                 </tr>
@@ -1245,28 +1380,28 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
         </table>
       </div>
 
-      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
-        <h3 style={{ color: COLORS.accent }}>Активні користувачі</h3>
+      <div style={{ backgroundColor: '#0f1623', padding: '20px', borderRadius: '6px', border: `1px solid #1e2a3a`, marginBottom: '20px' }}>
+        <h3 style={{ color: '#4fc3f7' }}>Активні користувачі</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
-            <tr style={{ backgroundColor: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
-              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Ім'я</th>
-              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Дата створення</th>
-              <th style={{ padding: '8px', textAlign: 'left', color: COLORS.accent }}>Роль</th>
-              <th style={{ padding: '8px', textAlign: 'center', color: COLORS.accent }}>Дія</th>
+            <tr style={{ backgroundColor: '#0a0f1a', borderBottom: `1px solid #1e2a3a` }}>
+              <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Ім'я</th>
+              <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Дата створення</th>
+              <th style={{ padding: '8px', textAlign: 'left', color: '#4fc3f7' }}>Роль</th>
+              <th style={{ padding: '8px', textAlign: 'center', color: '#4fc3f7' }}>Дія</th>
             </tr>
           </thead>
           <tbody>
             {users.map(user => (
-              <tr key={user.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                <td style={{ padding: '8px', color: COLORS.text }}>{user.name}</td>
-                <td style={{ padding: '8px', color: COLORS.text, fontSize: '11px' }}>{new Date(user.created_at).toLocaleDateString('uk-UA')}</td>
-                <td style={{ padding: '8px', color: user.is_admin ? COLORS.outbound : COLORS.text }}>
+              <tr key={user.id} style={{ borderBottom: `1px solid #1e2a3a` }}>
+                <td style={{ padding: '8px', color: '#e8edf5' }}>{user.name}</td>
+                <td style={{ padding: '8px', color: '#e8edf5', fontSize: '11px' }}>{new Date(user.created_at).toLocaleDateString('uk-UA')}</td>
+                <td style={{ padding: '8px', color: user.is_admin ? '#c0392b' : '#e8edf5' }}>
                   {user.is_admin ? '👑 АДМІН' : 'Користувач'}
                 </td>
                 <td style={{ padding: '8px', textAlign: 'center' }}>
                   {!user.is_admin && (
-                    <button onClick={() => onDeleteUser(user.id, user.name)} style={{ padding: '3px 8px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px' }}>
+                    <button onClick={() => onDeleteUser(user.id, user.name)} style={{ padding: '3px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px' }}>
                       Видалити
                     </button>
                   )}
@@ -1277,9 +1412,9 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
         </table>
       </div>
 
-      <div style={{ backgroundColor: COLORS.header, padding: '20px', borderRadius: '6px', border: `1px solid ${COLORS.border}` }}>
-        <h3 style={{ color: COLORS.accent }}>Інформація</h3>
-        <p style={{ color: COLORS.text, fontSize: '12px', lineHeight: '1.6' }}>
+      <div style={{ backgroundColor: '#0f1623', padding: '20px', borderRadius: '6px', border: `1px solid #1e2a3a` }}>
+        <h3 style={{ color: '#4fc3f7' }}>Інформація</h3>
+        <p style={{ color: '#e8edf5', fontSize: '12px', lineHeight: '1.6' }}>
           ✅ Додавай нових користувачів в список.<br/>
           ✅ Кожен вибирає своє ім'я при першому вході.<br/>
           ✅ Кожен створює свій унікальний пароль.<br/>
