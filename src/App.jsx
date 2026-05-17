@@ -149,220 +149,54 @@ function LoginPage({ onLogin, onFirstLogin }) {
 
   if (loading) {
     return (
-      <div style={{ 
-        backgroundColor: COLORS.bg, 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center'
-      }}>
+      <div style={{ backgroundColor: COLORS.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: COLORS.accent }}>Завантаження...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ 
-      backgroundColor: COLORS.bg, 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      flexDirection: 'column'
-    }}>
-      <div style={{
-        backgroundColor: COLORS.header,
-        padding: '40px',
-        borderRadius: '8px',
-        border: `1px solid ${COLORS.border}`,
-        width: '350px'
-      }}>
+    <div style={{ backgroundColor: COLORS.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+      <div style={{ backgroundColor: COLORS.header, padding: '40px', borderRadius: '8px', border: `1px solid ${COLORS.border}`, width: '350px' }}>
         <h1 style={{ color: COLORS.accent, textAlign: 'center', marginTop: 0, fontSize: '24px' }}>Irina MISSO</h1>
         <p style={{ color: COLORS.text, textAlign: 'center', fontSize: '12px', opacity: 0.7, marginBottom: '30px' }}>Система управління складом</p>
 
         {!isNewUser ? (
           <>
             <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Ім'я користувача:</label>
-            <select 
-              value={userName} 
-              onChange={(e) => setUserName(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                marginBottom: '20px',
-                backgroundColor: COLORS.bg,
-                color: COLORS.text,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-              }}
-            >
+            <select value={userName} onChange={(e) => setUserName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '20px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px', boxSizing: 'border-box' }}>
               <option value="">Виберіть ім'я</option>
-              {allowedUsers.map(user => (
-                <option key={user.name} value={user.name}>{user.name}</option>
-              ))}
+              {allowedUsers.map(user => (<option key={user.name} value={user.name}>{user.name}</option>))}
             </select>
 
             <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Пароль:</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Введіть пароль"
-              style={{
-                width: '100%',
-                padding: '10px',
-                marginBottom: '20px',
-                backgroundColor: COLORS.bg,
-                color: COLORS.text,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-              }}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-            />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Введіть пароль" style={{ width: '100%', padding: '10px', marginBottom: '20px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px', boxSizing: 'border-box' }} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} />
 
             {error && <p style={{ color: COLORS.outbound, fontSize: '12px', marginBottom: '15px' }}>{error}</p>}
 
-            <button 
-              onClick={handleLogin}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: COLORS.inbound,
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                marginBottom: '10px'
-              }}
-            >
-              Увійти
-            </button>
+            <button onClick={handleLogin} style={{ width: '100%', padding: '10px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '10px' }}>Увійти</button>
 
-            <button 
-              onClick={() => {
-                setIsNewUser(true);
-                setUserName('');
-                setPassword('');
-                setConfirmPassword('');
-                setError('');
-              }}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: COLORS.accent,
-                color: COLORS.header,
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              Перший раз? Створіть пароль
-            </button>
+            <button onClick={() => { setIsNewUser(true); setUserName(''); setPassword(''); setConfirmPassword(''); setError(''); }} style={{ width: '100%', padding: '10px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Перший раз? Створіть пароль</button>
           </>
         ) : (
           <>
             <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Виберіть ім'я:</label>
-            <select 
-              value={userName} 
-              onChange={(e) => setUserName(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                marginBottom: '20px',
-                backgroundColor: COLORS.bg,
-                color: COLORS.text,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-              }}
-            >
+            <select value={userName} onChange={(e) => setUserName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '20px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px', boxSizing: 'border-box' }}>
               <option value="">Виберіть ім'я</option>
-              {allowedUsers.map(user => (
-                <option key={user.name} value={user.name}>{user.name}</option>
-              ))}
+              {allowedUsers.map(user => (<option key={user.name} value={user.name}>{user.name}</option>))}
             </select>
 
             <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Придумайте пароль:</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Мінімум 4 символи"
-              style={{
-                width: '100%',
-                padding: '10px',
-                marginBottom: '20px',
-                backgroundColor: COLORS.bg,
-                color: COLORS.text,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-              }}
-            />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Мінімум 4 символи" style={{ width: '100%', padding: '10px', marginBottom: '20px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px', boxSizing: 'border-box' }} />
 
             <label style={{ color: COLORS.text, display: 'block', marginBottom: '10px', fontSize: '14px' }}>Повторіть пароль:</label>
-            <input 
-              type="password" 
-              value={confirmPassword} 
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Повторіть пароль"
-              style={{
-                width: '100%',
-                padding: '10px',
-                marginBottom: '20px',
-                backgroundColor: COLORS.bg,
-                color: COLORS.text,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '4px',
-                boxSizing: 'border-box'
-              }}
-              onKeyPress={(e) => e.key === 'Enter' && handleFirstLogin()}
-            />
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Повторіть пароль" style={{ width: '100%', padding: '10px', marginBottom: '20px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px', boxSizing: 'border-box' }} onKeyPress={(e) => e.key === 'Enter' && handleFirstLogin()} />
 
             {error && <p style={{ color: COLORS.outbound, fontSize: '12px', marginBottom: '15px' }}>{error}</p>}
 
-            <button 
-              onClick={handleFirstLogin}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: COLORS.inbound,
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                marginBottom: '10px'
-              }}
-            >
-              Створити аккаунт
-            </button>
+            <button onClick={handleFirstLogin} style={{ width: '100%', padding: '10px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '10px' }}>Створити аккаунт</button>
 
-            <button 
-              onClick={() => {
-                setIsNewUser(false);
-                setUserName('');
-                setPassword('');
-                setConfirmPassword('');
-                setError('');
-              }}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: COLORS.border,
-                color: COLORS.text,
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              Повернутись до входу
-            </button>
+            <button onClick={() => { setIsNewUser(false); setUserName(''); setPassword(''); setConfirmPassword(''); setError(''); }} style={{ width: '100%', padding: '10px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Повернутись до входу</button>
           </>
         )}
       </div>
@@ -402,12 +236,7 @@ export default function App() {
   useEffect(() => {
     if (currentUser) {
       loadAllData();
-      const subscription = supabase
-        .channel('all-tables')
-        .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-          loadAllData();
-        })
-        .subscribe();
+      const subscription = supabase.channel('all-tables').on('postgres_changes', { event: '*', schema: 'public' }, () => { loadAllData(); }).subscribe();
       return () => subscription.unsubscribe();
     }
   }, [currentUser]);
@@ -430,10 +259,7 @@ export default function App() {
       if (inboundData.data) setInbound(inboundData.data);
       if (outboundData.data) {
         const nowMinus7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        const filtered = outboundData.data.filter(item => {
-          if (!item.sent_at) return true;
-          return new Date(item.sent_at) > nowMinus7Days;
-        });
+        const filtered = outboundData.data.filter(item => { if (!item.sent_at) return true; return new Date(item.sent_at) > nowMinus7Days; });
         setOutbound(filtered);
       }
       if (stockData.data) setStock(stockData.data);
@@ -456,14 +282,7 @@ export default function App() {
 
   async function logAudit(action, tableName, details, oldValue = null, newValue = null) {
     try {
-      await supabase.from('audit_log').insert([{
-        user_name: currentUser,
-        action,
-        table_name: tableName,
-        details,
-        old_value: oldValue,
-        new_value: newValue
-      }]);
+      await supabase.from('audit_log').insert([{ user_name: currentUser, action, table_name: tableName, details, old_value: oldValue, new_value: newValue }]);
     } catch (err) {
       console.error('Помилка логування:', err);
     }
@@ -478,18 +297,10 @@ export default function App() {
 
   function getProductsByLocation() {
     const byCategory = {};
-    
     Object.keys(MISSO_PRODUCTS).forEach(sku => {
       const category = MISSO_PRODUCTS[sku].category;
       if (!byCategory[category]) {
-        byCategory[category] = {
-          sku,
-          name: MISSO_PRODUCTS[sku].name,
-          uaToPl: 0,
-          warehouse: 0,
-          clients: 0,
-          itemsPerBox: getItemsPerBox(sku)
-        };
+        byCategory[category] = { sku, name: MISSO_PRODUCTS[sku].name, uaToPl: 0, warehouse: 0, clients: 0, itemsPerBox: getItemsPerBox(sku) };
       }
     });
 
@@ -523,31 +334,14 @@ export default function App() {
   async function addInbound(formData) {
     try {
       await supabase.from('inbound').insert([formData]);
-      
       const existingStock = stock.find(s => s.product_sku === formData.product_sku);
-      
       if (existingStock) {
-        await supabase
-          .from('stock')
-          .update({ transport_boxes: existingStock.transport_boxes + formData.transport_boxes })
-          .eq('product_sku', formData.product_sku);
+        await supabase.from('stock').update({ transport_boxes: existingStock.transport_boxes + formData.transport_boxes }).eq('product_sku', formData.product_sku);
       } else {
-        await supabase.from('stock').insert([{
-          product_sku: formData.product_sku,
-          transport_boxes: formData.transport_boxes,
-          quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku)
-        }]);
+        await supabase.from('stock').insert([{ product_sku: formData.product_sku, transport_boxes: formData.transport_boxes, quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku) }]);
       }
-
-      await supabase.from('movements').insert([{
-        type: 'INBOUND',
-        product_sku: formData.product_sku,
-        quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku),
-        notes: `Sent from ua: ${formData.transport_boxes} boxes`
-      }]);
-
+      await supabase.from('movements').insert([{ type: 'INBOUND', product_sku: formData.product_sku, quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku), notes: `Sent from ua: ${formData.transport_boxes} boxes` }]);
       await logAudit('ДОДАВ', 'inbound', `Додав ${formData.transport_boxes} боксів ${formData.product_sku}`, null, formData.transport_boxes);
-      
       loadAllData();
       alert('✅ Товар успішно додано!');
     } catch (err) {
@@ -558,13 +352,8 @@ export default function App() {
 
   async function receiveAtWarehouse(inboundId, inboundData) {
     try {
-      await supabase
-        .from('inbound')
-        .update({ received_at_warehouse: new Date().toISOString() })
-        .eq('id', inboundId);
-
+      await supabase.from('inbound').update({ received_at_warehouse: new Date().toISOString() }).eq('id', inboundId);
       await logAudit('ПРИЙНЯВ', 'inbound', `Прийняв ${inboundData.transport_boxes} боксів ${inboundData.product_sku} на Warehouse PL`, null, 'Received');
-      
       loadAllData();
       alert('✅ Товар успішно прийнято на Warehouse PL!');
     } catch (err) {
@@ -576,28 +365,14 @@ export default function App() {
   async function addOutbound(formData) {
     try {
       const currentStock = stock.find(s => s.product_sku === formData.product_sku);
-      
       if (!currentStock || currentStock.transport_boxes < formData.transport_boxes) {
         alert(`❌ Недостатньо товару! На складі: ${currentStock?.transport_boxes || 0} боксів, а ви хочете відправити: ${formData.transport_boxes} боксів`);
         return;
       }
-
       await supabase.from('outbound').insert([formData]);
-
-      await supabase
-        .from('stock')
-        .update({ transport_boxes: currentStock.transport_boxes - formData.transport_boxes })
-        .eq('product_sku', formData.product_sku);
-
-      await supabase.from('movements').insert([{
-        type: 'OUTBOUND',
-        product_sku: formData.product_sku,
-        quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku),
-        notes: `Sent to ${formData.client}: ${formData.transport_boxes} boxes`
-      }]);
-
+      await supabase.from('stock').update({ transport_boxes: currentStock.transport_boxes - formData.transport_boxes }).eq('product_sku', formData.product_sku);
+      await supabase.from('movements').insert([{ type: 'OUTBOUND', product_sku: formData.product_sku, quantity: formData.transport_boxes * getItemsPerBox(formData.product_sku), notes: `Sent to ${formData.client}: ${formData.transport_boxes} boxes` }]);
       await logAudit('ВІДПРАВИВ', 'outbound', `Відправив ${formData.transport_boxes} боксів до ${formData.client}`, currentStock.transport_boxes, currentStock.transport_boxes - formData.transport_boxes);
-      
       loadAllData();
       alert('✅ Товар успішно відправлено!');
     } catch (err) {
@@ -611,15 +386,11 @@ export default function App() {
       alert('❌ Ви можете редагувати тільки свої операції!');
       return;
     }
-
     try {
       await supabase.from(tableName).update(newData).eq('id', id);
-      
       const diffFields = Object.keys(newData).filter(key => oldData[key] !== newData[key]);
       const details = diffFields.map(f => `${f}: ${oldData[f]} → ${newData[f]}`).join(', ');
-      
       await logAudit('РЕДАГУВАВ', tableName, details, JSON.stringify(oldData), JSON.stringify(newData));
-      
       setEditingId(null);
       loadAllData();
       alert('✅ Запис успішно оновлено!');
@@ -634,16 +405,10 @@ export default function App() {
       alert('❌ Ви можете видаляти тільки свої операції!');
       return;
     }
-
-    if (!confirm('⚠️ Ви впевнені що хочете видалити цю операцію? Дія неповоротна!')) {
-      return;
-    }
-
+    if (!confirm('⚠️ Ви впевнені що хочете видалити цю операцію? Дія неповоротна!')) return;
     try {
       await supabase.from(tableName).delete().eq('id', id);
-      
       await logAudit('ВИДАЛИВ', tableName, `Видалив запис: ${JSON.stringify(data)}`, JSON.stringify(data), null);
-      
       loadAllData();
       alert('✅ Запис успішно видалено!');
     } catch (err) {
@@ -653,18 +418,12 @@ export default function App() {
   }
 
   if (!currentUser) {
-    return <LoginPage onLogin={(user, admin) => {
-      setCurrentUser(user);
-      setIsAdmin(admin);
-    }} onFirstLogin={(user) => {
-      setCurrentUser(user);
-      setIsAdmin(false);
-    }} />;
+    return <LoginPage onLogin={(user, admin) => { setCurrentUser(user); setIsAdmin(admin); }} onFirstLogin={(user) => { setCurrentUser(user); setIsAdmin(false); }} />;
   }
 
   const stats = getDashboardStats();
   const productsByLocation = getProductsByLocation();
-  
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'inbound', label: '📦 UA→PL' },
@@ -689,34 +448,13 @@ export default function App() {
         </div>
         <div style={{ textAlign: 'right' }}>
           <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: COLORS.accent }}>Користувач: <strong>{currentUser}</strong> {isAdmin && '👑'}</p>
-          <button onClick={() => {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('isAdmin');
-            setCurrentUser(null);
-          }} style={{ padding: '6px 12px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-            Вихід
-          </button>
+          <button onClick={() => { localStorage.removeItem('currentUser'); localStorage.removeItem('isAdmin'); setCurrentUser(null); }} style={{ padding: '6px 12px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Вихід</button>
         </div>
       </header>
 
       <div style={{ display: 'flex', borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.header, overflowX: 'auto' }}>
         {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              flex: '1',
-              padding: '14px 10px',
-              border: 'none',
-              backgroundColor: activeTab === tab.id ? COLORS.accent : COLORS.header,
-              color: activeTab === tab.id ? COLORS.header : COLORS.text,
-              fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              fontSize: '12px',
-              whiteSpace: 'nowrap'
-            }}
-          >
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: '1', padding: '14px 10px', border: 'none', backgroundColor: activeTab === tab.id ? COLORS.accent : COLORS.header, color: activeTab === tab.id ? COLORS.header : COLORS.text, fontWeight: activeTab === tab.id ? 'bold' : 'normal', cursor: 'pointer', transition: 'all 0.2s', fontSize: '12px', whiteSpace: 'nowrap' }}>
             {tab.label}
           </button>
         ))}
@@ -727,172 +465,45 @@ export default function App() {
 
         {!loading && activeTab === 'dashboard' && (
           <div>
-            <h2 style={{ color: COLORS.accent }}>📊 Огляд</h2>
+            <h2 style={{ color: COLORS.accent }}>Dashboard</h2>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              <div style={{
-                backgroundColor: COLORS.header,
-                border: `2px solid ${COLORS.accent}`,
-                borderRadius: '12px',
-                padding: '25px',
-                boxShadow: `0 8px 32px rgba(79, 195, 247, 0.15)`
-              }}>
-                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>📦 З ГОДИНИ В ПОЛЬЩУ</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px' }}>
-                  <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.accent }}>{stats.uaToPlInbound}</h3>
-                  <span style={{ color: COLORS.text, opacity: 0.6 }}>боксів</span>
-                </div>
-                <div style={{ height: '6px', backgroundColor: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, (stats.uaToPlInbound / 10) * 100)}%`, backgroundColor: COLORS.accent, borderRadius: '3px' }}></div>
-                </div>
+              <div style={{ backgroundColor: COLORS.header, border: `2px solid ${COLORS.accent}`, borderRadius: '12px', padding: '25px', boxShadow: `0 8px 32px rgba(79, 195, 247, 0.15)` }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>1. UA→PL</p>
+                <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.accent }}>{stats.uaToPlInbound}</h3>
+                <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
               </div>
 
-              <div style={{
-                backgroundColor: COLORS.header,
-                border: `2px solid ${COLORS.inbound}`,
-                borderRadius: '12px',
-                padding: '25px',
-                boxShadow: `0 8px 32px rgba(46, 160, 67, 0.15)`
-              }}>
-                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>🏭 СКЛАДСЬКЕ ПОЛЬЩА</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px' }}>
-                  <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.inbound }}>{stats.warehousePL}</h3>
-                  <span style={{ color: COLORS.text, opacity: 0.6 }}>боксів</span>
-                </div>
-                <div style={{ height: '6px', backgroundColor: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, (stats.warehousePL / 10) * 100)}%`, backgroundColor: COLORS.inbound, borderRadius: '3px' }}></div>
-                </div>
+              <div style={{ backgroundColor: COLORS.header, border: `2px solid ${COLORS.inbound}`, borderRadius: '12px', padding: '25px', boxShadow: `0 8px 32px rgba(46, 160, 67, 0.15)` }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>2. СКЛАД PL</p>
+                <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.inbound }}>{stats.warehousePL}</h3>
+                <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
               </div>
 
-              <div style={{
-                backgroundColor: COLORS.header,
-                border: `2px solid ${COLORS.outbound}`,
-                borderRadius: '12px',
-                padding: '25px',
-                boxShadow: `0 8px 32px rgba(192, 57, 43, 0.15)`
-              }}>
-                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>🚚 У ДОСТАВЦІ КЛІЄНТАМ</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px' }}>
-                  <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.outbound }}>{stats.clientsOut}</h3>
-                  <span style={{ color: COLORS.text, opacity: 0.6 }}>боксів</span>
-                </div>
-                <div style={{ height: '6px', backgroundColor: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, (stats.clientsOut / 10) * 100)}%`, backgroundColor: COLORS.outbound, borderRadius: '3px' }}></div>
-                </div>
+              <div style={{ backgroundColor: COLORS.header, border: `2px solid ${COLORS.outbound}`, borderRadius: '12px', padding: '25px', boxShadow: `0 8px 32px rgba(192, 57, 43, 0.15)` }}>
+                <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: COLORS.text, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>3. PL→КЛІЄНТИ</p>
+                <h3 style={{ margin: 0, fontSize: '48px', fontWeight: 'bold', color: COLORS.outbound }}>{stats.clientsOut}</h3>
+                <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
               </div>
             </div>
 
-            <div style={{
-              backgroundColor: COLORS.header,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: '12px',
-              padding: '30px',
-              marginBottom: '40px',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
-            }}>
-              <h3 style={{ margin: '0 0 30px 0', color: COLORS.accent, fontSize: '18px' }}>🔄 ПОТОК ТОВАРУ</h3>
+            <div style={{ backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, borderRadius: '12px', padding: '30px', marginBottom: '40px' }}>
+              <h4 style={{ margin: '0 0 20px 0', color: COLORS.accent, fontSize: '16px' }}>📦 Товари на складі:</h4>
               
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '150px' }}>
-                  <div style={{
-                    backgroundColor: COLORS.bg,
-                    border: `2px solid ${COLORS.accent}`,
-                    borderRadius: '8px',
-                    padding: '20px',
-                    textAlign: 'center'
-                  }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.text, opacity: 0.7 }}>УКРАЇНА</p>
-                    <h4 style={{ margin: 0, fontSize: '32px', color: COLORS.accent, fontWeight: 'bold' }}>{stats.uaToPlInbound}</h4>
-                    <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '80px', justifyContent: 'center' }}>
-                  <div style={{ height: '3px', flex: 1, backgroundColor: COLORS.accent }}></div>
-                  <span style={{ color: COLORS.accent, fontSize: '20px' }}>→</span>
-                </div>
-
-                <div style={{ flex: 1, minWidth: '150px' }}>
-                  <div style={{
-                    backgroundColor: COLORS.bg,
-                    border: `2px solid ${COLORS.inbound}`,
-                    borderRadius: '8px',
-                    padding: '20px',
-                    textAlign: 'center'
-                  }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.text, opacity: 0.7 }}>СКЛАД PL</p>
-                    <h4 style={{ margin: 0, fontSize: '32px', color: COLORS.inbound, fontWeight: 'bold' }}>{stats.warehousePL}</h4>
-                    <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '80px', justifyContent: 'center' }}>
-                  <div style={{ height: '3px', flex: 1, backgroundColor: COLORS.inbound }}></div>
-                  <span style={{ color: COLORS.inbound, fontSize: '20px' }}>→</span>
-                </div>
-
-                <div style={{ flex: 1, minWidth: '150px' }}>
-                  <div style={{
-                    backgroundColor: COLORS.bg,
-                    border: `2px solid ${COLORS.outbound}`,
-                    borderRadius: '8px',
-                    padding: '20px',
-                    textAlign: 'center'
-                  }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.text, opacity: 0.7 }}>КЛІЄНТИ</p>
-                    <h4 style={{ margin: 0, fontSize: '32px', color: COLORS.outbound, fontWeight: 'bold' }}>{stats.clientsOut}</h4>
-                    <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.text, opacity: 0.6 }}>боксів</p>
-                  </div>
-                </div>
-              </div>
-
-              <h4 style={{ margin: '0 0 20px 0', color: COLORS.accent, fontSize: '14px' }}>📦 Деталі по товарам:</h4>
-              
-              {Object.entries(productsByLocation).length === 0 ? (
-                <p style={{ color: COLORS.text, opacity: 0.5, textAlign: 'center', padding: '40px 0' }}>📭 Немає товару на складі</p>
+              {Object.entries(productsByLocation).filter(([_, data]) => data.warehouse > 0).length === 0 ? (
+                <p style={{ color: COLORS.text, opacity: 0.5, textAlign: 'center', padding: '40px 0' }}>📭 Склад порожній</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
-                  {Object.entries(productsByLocation).map(([category, data]) => {
-                    const warehousePercent = Math.min(100, (data.warehouse / 3) * 100);
+                  {Object.entries(productsByLocation).filter(([_, data]) => data.warehouse > 0).map(([category, data]) => {
                     const status = getStatusColor(data.warehouse);
-                    
                     return (
-                      <div key={category} style={{
-                        backgroundColor: COLORS.bg,
-                        border: `1px solid ${COLORS.border}`,
-                        borderRadius: '8px',
-                        padding: '15px',
-                        borderLeft: `4px solid ${status.color}`
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                      <div key={category} style={{ backgroundColor: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: '8px', padding: '15px', borderLeft: `4px solid ${status.color}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                           <div>
                             <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: COLORS.text, fontSize: '14px' }}>{data.name}</p>
-                            <p style={{ margin: 0, fontSize: '12px', color: COLORS.text, opacity: 0.6 }}>
-                              ua→pl: {data.uaToPl} | Склад: {data.warehouse} | Клієнти: {data.clients}
-                            </p>
+                            <p style={{ margin: 0, fontSize: '12px', color: COLORS.text, opacity: 0.6 }}>Боксів: {data.warehouse}</p>
                           </div>
                           <span style={{ color: status.color, fontWeight: 'bold', fontSize: '12px' }}>{status.label}</span>
-                        </div>
-                        
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ height: '4px', backgroundColor: COLORS.border, borderRadius: '2px', marginBottom: '5px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${Math.min(100, (data.uaToPl / 2) * 100)}%`, backgroundColor: COLORS.accent }}></div>
-                            </div>
-                            <p style={{ margin: 0, fontSize: '10px', color: COLORS.text, opacity: 0.6 }}>{data.uaToPl} б.</p>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ height: '4px', backgroundColor: COLORS.border, borderRadius: '2px', marginBottom: '5px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${warehousePercent}%`, backgroundColor: COLORS.inbound }}></div>
-                            </div>
-                            <p style={{ margin: 0, fontSize: '10px', color: COLORS.text, opacity: 0.6 }}>{data.warehouse} б.</p>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ height: '4px', backgroundColor: COLORS.border, borderRadius: '2px', marginBottom: '5px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${Math.min(100, (data.clients / 2) * 100)}%`, backgroundColor: COLORS.outbound }}></div>
-                            </div>
-                            <p style={{ margin: 0, fontSize: '10px', color: COLORS.text, opacity: 0.6 }}>{data.clients} б.</p>
-                          </div>
                         </div>
                       </div>
                     );
@@ -901,16 +512,7 @@ export default function App() {
               )}
             </div>
 
-            <div style={{
-              backgroundColor: COLORS.header,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: '8px',
-              padding: '15px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '15px',
-              fontSize: '12px'
-            }}>
+            <div style={{ backgroundColor: COLORS.header, border: `1px solid ${COLORS.border}`, borderRadius: '8px', padding: '15px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', fontSize: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: COLORS.inbound }}></span>
                 <span style={{ color: COLORS.text }}>🟢 OK - ≥ 2 бокса</span>
@@ -933,54 +535,8 @@ export default function App() {
         {!loading && activeTab === 'movements' && <MovementsTab movements={movements} products={MISSO_PRODUCTS} />}
         {!loading && activeTab === 'audit' && <AuditTab auditLog={auditLog} />}
         {!loading && activeTab === 'products' && <ProductsTab products={MISSO_PRODUCTS} />}
-        {!loading && activeTab === 'clients' && <ClientsTab clients={clients} currentUser={currentUser} isAdmin={isAdmin} onAddClient={async (clientData) => {
-          try {
-            await supabase.from('clients').insert([clientData]);
-            await logAudit('ДОДАВ_КЛІЄНТА', 'clients', `Додав клієнта: ${clientData.name}`, null, JSON.stringify(clientData));
-            loadAllData();
-            alert('✅ Клієнта успішно додано!');
-          } catch (err) {
-            console.error('Помилка:', err);
-            alert('❌ Помилка при додаванні клієнта!');
-          }
-        }} onDeleteClient={async (clientId, clientName) => {
-          if (!isAdmin) {
-            alert('❌ Тільки адміністратор може видаляти клієнтів!');
-            return;
-          }
-          if (!confirm(`⚠️ Видалити клієнта ${clientName}?`)) return;
-          try {
-            await supabase.from('clients').delete().eq('id', clientId);
-            await logAudit('ВИДАЛИВ_КЛІЄНТА', 'clients', `Видалив клієнта: ${clientName}`, null, null);
-            loadAllData();
-            alert('✅ Клієнта успішно видалено!');
-          } catch (err) {
-            console.error('Помилка:', err);
-            alert('❌ Помилка при видаленні клієнта!');
-          }
-        }} />}
-        {!loading && activeTab === 'admin' && isAdmin && <AdminPanel users={users} allowedUsers={allowedUsers} onAddAllowedUser={async (newName) => {
-          try {
-            await supabase.from('allowed_users').insert([{ name: newName, created_by: currentUser }]);
-            await logAudit('ДОДАВ_КОРИСТУВАЧА', 'allowed_users', `Додав користувача: ${newName}`, null, newName);
-            loadAllData();
-            alert('✅ Користувача успішно додано!');
-          } catch (err) {
-            console.error('Помилка:', err);
-            alert('❌ Помилка при додаванні користувача!');
-          }
-        }} onDeleteUser={async (userId, userName) => {
-          if (!confirm(`⚠️ Видалити користувача ${userName}?\n\nУсі його операції залишаться в журналі.`)) return;
-          try {
-            await supabase.from('users').delete().eq('id', userId);
-            await logAudit('ВИДАЛИВ_КОРИСТУВАЧА', 'users', `Видалив користувача: ${userName}`, null, null);
-            loadAllData();
-            alert('✅ Користувача успішно видалено!');
-          } catch (err) {
-            console.error('Помилка:', err);
-            alert('❌ Помилка при видаленні користувача!');
-          }
-        }} />}
+        {!loading && activeTab === 'clients' && <ClientsTab clients={clients} currentUser={currentUser} isAdmin={isAdmin} onAddClient={async (clientData) => { try { await supabase.from('clients').insert([clientData]); await logAudit('ДОДАВ_КЛІЄНТА', 'clients', `Додав клієнта: ${clientData.name}`, null, JSON.stringify(clientData)); loadAllData(); alert('✅ Клієнта успішно додано!'); } catch (err) { console.error('Помилка:', err); alert('❌ Помилка при додаванні клієнта!'); } }} onDeleteClient={async (clientId, clientName) => { if (!isAdmin) { alert('❌ Тільки адміністратор може видаляти клієнтів!'); return; } if (!confirm(`⚠️ Видалити клієнта ${clientName}?`)) return; try { await supabase.from('clients').delete().eq('id', clientId); await logAudit('ВИДАЛИВ_КЛІЄНТА', 'clients', `Видалив клієнта: ${clientName}`, null, null); loadAllData(); alert('✅ Клієнта успішно видалено!'); } catch (err) { console.error('Помилка:', err); alert('❌ Помилка при видаленні клієнта!'); } }} />}
+        {!loading && activeTab === 'admin' && isAdmin && <AdminPanel users={users} allowedUsers={allowedUsers} onAddAllowedUser={async (newName) => { try { await supabase.from('allowed_users').insert([{ name: newName, created_by: currentUser }]); await logAudit('ДОДАВ_КОРИСТУВАЧА', 'allowed_users', `Додав користувача: ${newName}`, null, newName); loadAllData(); alert('✅ Користувача успішно додано!'); } catch (err) { console.error('Помилка:', err); alert('❌ Помилка при додаванні користувача!'); } }} onDeleteUser={async (userId, userName) => { if (!confirm(`⚠️ Видалити користувача ${userName}?\n\nУсі його операції залишаться в журналі.`)) return; try { await supabase.from('users').delete().eq('id', userId); await logAudit('ВИДАЛИВ_КОРИСТУВАЧА', 'users', `Видалив користувача: ${userName}`, null, null); loadAllData(); alert('✅ Користувача успішно видалено!'); } catch (err) { console.error('Помилка:', err); alert('❌ Помилка при видаленні користувача!'); } }} />}
       </div>
     </div>
   );
@@ -996,17 +552,8 @@ function InboundTab({ inbound, products, productConfig, onAdd, onReceive, curren
   };
 
   const handleAdd = async () => {
-    if (boxes <= 0) {
-      alert('Кількість боксів має бути більше 0!');
-      return;
-    }
-    await onAdd({
-      product_sku: sku,
-      transport_boxes: parseInt(boxes),
-      origin: 'ua',
-      status: 'sent',
-      user_name: currentUser
-    });
+    if (boxes <= 0) { alert('Кількість боксів має бути більше 0!'); return; }
+    await onAdd({ product_sku: sku, transport_boxes: parseInt(boxes), origin: 'ua', status: 'sent', user_name: currentUser });
     setBoxes(1);
   };
 
@@ -1018,9 +565,7 @@ function InboundTab({ inbound, products, productConfig, onAdd, onReceive, curren
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Продукт:</label>
             <select value={sku} onChange={(e) => setSku(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
-              {Object.entries(products).map(([key, val]) => (
-                <option key={key} value={key}>{val.name}</option>
-              ))}
+              {Object.entries(products).map(([key, val]) => (<option key={key} value={key}>{val.name}</option>))}
             </select>
           </div>
           <div>
@@ -1029,9 +574,7 @@ function InboundTab({ inbound, products, productConfig, onAdd, onReceive, curren
             <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: COLORS.accent }}>({boxes * getItemsPerBox(sku)} {getItemsPerBox(sku) === 120 ? 'bars' : 'pieces'})</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-              Додати
-            </button>
+            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Додати</button>
           </div>
         </div>
       </div>
@@ -1049,48 +592,36 @@ function InboundTab({ inbound, products, productConfig, onAdd, onReceive, curren
           </tr>
         </thead>
         <tbody>
-          {inbound.length === 0 ? (
-            <tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
-          ) : (
-            inbound.slice(0, 20).map((item) => (
-              editingId === item.id ? (
-                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.bg }}>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center' }}>
-                    <input type="number" value={editValues.transport_boxes || item.transport_boxes} onChange={(e) => setEditValues({...editValues, transport_boxes: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
-                  </td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.received_at_warehouse ? '✅ Прийнято' : '⏳ В дорозі'}</td>
-                  <td style={{ padding: '8px' }}>
-                    <button onClick={() => onEdit(item.id, 'inbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
-                    <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.received_at_warehouse ? '✅ Прийнято' : '⏳ В дорозі'}</td>
-                  <td style={{ padding: '8px' }}>
-                    {!item.received_at_warehouse && (
-                      <button onClick={() => onReceive(item.id, item)} style={{ padding: '4px 8px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>
-                        Received at Warehouse PL
-                      </button>
-                    )}
-                    {(currentUser === item.user_name || isAdmin) && (
-                      <>
-                        <button onClick={() => { setEditingId(item.id); setEditValues({transport_boxes: item.transport_boxes}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
-                        <button onClick={() => onDelete(item.id, 'inbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              )
-            ))
-          )}
+          {inbound.length === 0 ? (<tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>) : (inbound.slice(0, 20).map((item) => (
+            editingId === item.id ? (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.bg }}>
+                <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                <td style={{ padding: '8px', textAlign: 'center' }}><input type="number" value={editValues.transport_boxes || item.transport_boxes} onChange={(e) => setEditValues({...editValues, transport_boxes: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} /></td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.received_at_warehouse ? '✅ Прийнято' : '⏳ В дорозі'}</td>
+                <td style={{ padding: '8px' }}>
+                  <button onClick={() => onEdit(item.id, 'inbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
+                  <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+                </td>
+              </tr>
+            ) : (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.received_at_warehouse ? '✅ Прийнято' : '⏳ В дорозі'}</td>
+                <td style={{ padding: '8px' }}>
+                  {!item.received_at_warehouse && (<button onClick={() => onReceive(item.id, item)} style={{ padding: '4px 8px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Received at Warehouse PL</button>)}
+                  {(currentUser === item.user_name || isAdmin) && (<>
+                    <button onClick={() => { setEditingId(item.id); setEditValues({transport_boxes: item.transport_boxes}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
+                    <button onClick={() => onDelete(item.id, 'inbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
+                  </>)}
+                </td>
+              </tr>
+            )
+          )))}
         </tbody>
       </table>
     </div>
@@ -1112,27 +643,14 @@ function OutboundTab({ outbound, products, productConfig, clients, stock, onAdd,
   const availableBoxes = currentStock?.transport_boxes || 0;
 
   const handleAdd = async () => {
-    if (boxes <= 0) {
-      alert('Кількість боксів має бути більше 0!');
-      return;
-    }
-    if (!client) {
-      alert('Виберіть клієнта!');
-      return;
-    }
+    if (boxes <= 0) { alert('Кількість боксів має бути більше 0!'); return; }
+    if (!client) { alert('Виберіть клієнта!'); return; }
     setShowConfirm(true);
   };
 
   const confirmSend = async () => {
     setShowConfirm(false);
-    await onAdd({
-      product_sku: sku,
-      transport_boxes: parseInt(boxes),
-      client,
-      destination: 'PL',
-      status: 'shipped',
-      user_name: currentUser
-    });
+    await onAdd({ product_sku: sku, transport_boxes: parseInt(boxes), client, destination: 'PL', status: 'shipped', user_name: currentUser });
     setBoxes(1);
   };
 
@@ -1144,13 +662,9 @@ function OutboundTab({ outbound, products, productConfig, clients, stock, onAdd,
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Продукт:</label>
             <select value={sku} onChange={(e) => setSku(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
-              {Object.entries(products).map(([key, val]) => (
-                <option key={key} value={key}>{val.name}</option>
-              ))}
+              {Object.entries(products).map(([key, val]) => (<option key={key} value={key}>{val.name}</option>))}
             </select>
-            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: availableBoxes < 2 ? COLORS.outbound : COLORS.inbound }}>
-              На складі: {availableBoxes} боксів
-            </p>
+            <p style={{ margin: '5px 0 0 0', fontSize: '11px', color: availableBoxes < 2 ? COLORS.outbound : COLORS.inbound }}>На складі: {availableBoxes} боксів</p>
           </div>
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Кількість боксів:</label>
@@ -1160,19 +674,11 @@ function OutboundTab({ outbound, products, productConfig, clients, stock, onAdd,
           <div>
             <label style={{ color: COLORS.text, fontSize: '12px' }}>Клієнт:</label>
             <select value={client} onChange={(e) => setClient(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: '4px' }}>
-              {clients.length === 0 ? (
-                <option>Немає клієнтів</option>
-              ) : (
-                clients.map(c => (
-                  <option key={c.id} value={c.name}>{c.name}</option>
-                ))
-              )}
+              {clients.length === 0 ? (<option>Немає клієнтів</option>) : (clients.map(c => (<option key={c.id} value={c.name}>{c.name}</option>)))}
             </select>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-              Відправити
-            </button>
+            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Відправити</button>
           </div>
         </div>
       </div>
@@ -1201,43 +707,35 @@ function OutboundTab({ outbound, products, productConfig, clients, stock, onAdd,
           </tr>
         </thead>
         <tbody>
-          {outbound.length === 0 ? (
-            <tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>
-          ) : (
-            outbound.slice(0, 20).map((item) => (
-              editingId === item.id ? (
-                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.bg }}>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center' }}>
-                    <input type="number" value={editValues.transport_boxes || item.transport_boxes} onChange={(e) => setEditValues({...editValues, transport_boxes: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} />
-                  </td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
-                  <td style={{ padding: '8px' }}>
-                    <button onClick={() => onEdit(item.id, 'outbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
-                    <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
-                  <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
-                  <td style={{ padding: '8px' }}>
-                    {(currentUser === item.user_name || isAdmin) && (
-                      <>
-                        <button onClick={() => { setEditingId(item.id); setEditValues({transport_boxes: item.transport_boxes}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
-                        <button onClick={() => onDelete(item.id, 'outbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              )
-            ))
-          )}
+          {outbound.length === 0 ? (<tr><td colSpan="6" style={{ padding: '10px', textAlign: 'center', color: COLORS.text, opacity: 0.5 }}>Немає даних</td></tr>) : (outbound.slice(0, 20).map((item) => (
+            editingId === item.id ? (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}`, backgroundColor: COLORS.bg }}>
+                <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                <td style={{ padding: '8px', textAlign: 'center' }}><input type="number" value={editValues.transport_boxes || item.transport_boxes} onChange={(e) => setEditValues({...editValues, transport_boxes: parseInt(e.target.value)})} style={{ width: '60px', padding: '4px', backgroundColor: COLORS.header, color: COLORS.text, border: `1px solid ${COLORS.border}` }} /></td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
+                <td style={{ padding: '8px' }}>
+                  <button onClick={() => onEdit(item.id, 'outbound', item, editValues)} style={{ padding: '3px 6px', backgroundColor: COLORS.inbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>✓</button>
+                  <button onClick={() => setEditingId(null)} style={{ padding: '3px 6px', backgroundColor: COLORS.border, color: COLORS.text, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+                </td>
+              </tr>
+            ) : (
+              <tr key={item.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <td style={{ padding: '8px', color: COLORS.text }}>{new Date(item.created_at).toLocaleDateString('uk-UA')}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.user_name}</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.product_sku}</td>
+                <td style={{ padding: '8px', textAlign: 'center', color: COLORS.text }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
+                <td style={{ padding: '8px', color: COLORS.text }}>{item.client}</td>
+                <td style={{ padding: '8px' }}>
+                  {(currentUser === item.user_name || isAdmin) && (<>
+                    <button onClick={() => { setEditingId(item.id); setEditValues({transport_boxes: item.transport_boxes}); }} style={{ padding: '3px 6px', backgroundColor: COLORS.accent, color: COLORS.header, border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', marginRight: '4px' }}>Ред</button>
+                    <button onClick={() => onDelete(item.id, 'outbound', item)} style={{ padding: '3px 6px', backgroundColor: COLORS.outbound, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}>Вид</button>
+                  </>)}
+                </td>
+              </tr>
+            )
+          )))}
         </tbody>
       </table>
     </div>
@@ -1245,16 +743,8 @@ function OutboundTab({ outbound, products, productConfig, clients, stock, onAdd,
 }
 
 function StockTab({ stock, products, productConfig }) {
-  const getItemsPerBox = (sku) => {
-    const config = productConfig.find(p => p.product_sku === sku);
-    return config ? config.items_per_box : 120;
-  };
-
-  const getStatus = (boxes) => {
-    if (boxes < 1) return { color: '#c0392b', label: 'CRITICAL 🔴' };
-    if (boxes === 1) return { color: '#ff9800', label: 'LOW 🟡' };
-    return { color: '#2ea043', label: 'OK 🟢' };
-  };
+  const getItemsPerBox = (sku) => { const config = productConfig.find(p => p.product_sku === sku); return config ? config.items_per_box : 120; };
+  const getStatus = (boxes) => { if (boxes < 1) return { color: '#c0392b', label: 'CRITICAL 🔴' }; if (boxes === 1) return { color: '#ff9800', label: 'LOW 🟡' }; return { color: '#2ea043', label: 'OK 🟢' }; };
 
   return (
     <div>
@@ -1269,23 +759,7 @@ function StockTab({ stock, products, productConfig }) {
           </tr>
         </thead>
         <tbody>
-          {stock.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Склад порожній</td></tr>
-          ) : (
-            stock.map((item) => {
-              const status = getStatus(item.transport_boxes);
-              return (
-                <tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
-                  <td style={{ padding: '8px', fontFamily: 'monospace', color: '#4fc3f7' }}>{item.product_sku}</td>
-                  <td style={{ padding: '8px', color: '#e8edf5' }}>{products[item.product_sku]?.name || item.product_sku}</td>
-                  <td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#e8edf5' }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td>
-                  <td style={{ padding: '8px', textAlign: 'center', color: status.color }}>
-                    {status.label}
-                  </td>
-                </tr>
-              );
-            })
-          )}
+          {stock.length === 0 ? (<tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Склад порожній</td></tr>) : (stock.map((item) => { const status = getStatus(item.transport_boxes); return (<tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}><td style={{ padding: '8px', fontFamily: 'monospace', color: '#4fc3f7' }}>{item.product_sku}</td><td style={{ padding: '8px', color: '#e8edf5' }}>{products[item.product_sku]?.name || item.product_sku}</td><td style={{ padding: '8px', textAlign: 'center', fontWeight: 'bold', color: '#e8edf5' }}>{item.transport_boxes} ({item.transport_boxes * getItemsPerBox(item.product_sku)} {getItemsPerBox(item.product_sku) === 120 ? 'bars' : 'pieces'})</td><td style={{ padding: '8px', textAlign: 'center', color: status.color }}>{status.label}</td></tr>); }))}
         </tbody>
       </table>
     </div>
@@ -1307,30 +781,7 @@ function MovementsTab({ movements, products }) {
           </tr>
         </thead>
         <tbody>
-          {movements.length === 0 ? (
-            <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає записів</td></tr>
-          ) : (
-            movements.slice(0, 50).map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
-                <td style={{ padding: '6px', color: '#e8edf5' }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-                <td style={{ padding: '6px' }}>
-                  <span style={{ 
-                    padding: '2px 6px', 
-                    borderRadius: '3px', 
-                    backgroundColor: item.type === 'INBOUND' ? '#2ea043' : '#c0392b',
-                    color: 'white',
-                    fontSize: '10px',
-                    fontWeight: 'bold'
-                  }}>
-                    {item.type === 'INBOUND' ? 'IN' : 'OUT'}
-                  </span>
-                </td>
-                <td style={{ padding: '6px', fontFamily: 'monospace', color: '#4fc3f7', fontSize: '10px' }}>{item.product_sku}</td>
-                <td style={{ padding: '6px', textAlign: 'center', color: '#e8edf5' }}>{item.quantity}</td>
-                <td style={{ padding: '6px', color: '#e8edf5' }}>{item.notes}</td>
-              </tr>
-            ))
-          )}
+          {movements.length === 0 ? (<tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає записів</td></tr>) : (movements.slice(0, 50).map((item) => (<tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}><td style={{ padding: '6px', color: '#e8edf5' }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td><td style={{ padding: '6px' }}><span style={{ padding: '2px 6px', borderRadius: '3px', backgroundColor: item.type === 'INBOUND' ? '#2ea043' : '#c0392b', color: 'white', fontSize: '10px', fontWeight: 'bold' }}>{item.type === 'INBOUND' ? 'IN' : 'OUT'}</span></td><td style={{ padding: '6px', fontFamily: 'monospace', color: '#4fc3f7', fontSize: '10px' }}>{item.product_sku}</td><td style={{ padding: '6px', textAlign: 'center', color: '#e8edf5' }}>{item.quantity}</td><td style={{ padding: '6px', color: '#e8edf5' }}>{item.notes}</td></tr>)))}
         </tbody>
       </table>
     </div>
@@ -1351,18 +802,7 @@ function AuditTab({ auditLog }) {
           </tr>
         </thead>
         <tbody>
-          {auditLog.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає записів</td></tr>
-          ) : (
-            auditLog.slice(0, 100).map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
-                <td style={{ padding: '6px', color: '#e8edf5' }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-                <td style={{ padding: '6px', color: '#4fc3f7', fontWeight: 'bold', fontSize: '10px' }}>{item.user_name}</td>
-                <td style={{ padding: '6px', color: '#c0392b', fontSize: '10px' }}>{item.action}</td>
-                <td style={{ padding: '6px', color: '#e8edf5', fontSize: '10px' }}>{item.details}</td>
-              </tr>
-            ))
-          )}
+          {auditLog.length === 0 ? (<tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає записів</td></tr>) : (auditLog.slice(0, 100).map((item) => (<tr key={item.id} style={{ borderBottom: '1px solid #1e2a3a' }}><td style={{ padding: '6px', color: '#e8edf5' }}>{new Date(item.created_at).toLocaleString('uk-UA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td><td style={{ padding: '6px', color: '#4fc3f7', fontWeight: 'bold', fontSize: '10px' }}>{item.user_name}</td><td style={{ padding: '6px', color: '#c0392b', fontSize: '10px' }}>{item.action}</td><td style={{ padding: '6px', color: '#e8edf5', fontSize: '10px' }}>{item.details}</td></tr>)))}
         </tbody>
       </table>
     </div>
@@ -1371,10 +811,7 @@ function AuditTab({ auditLog }) {
 
 function ProductsTab({ products }) {
   const categories = {};
-  Object.values(products).forEach(p => {
-    if (!categories[p.category]) categories[p.category] = [];
-    categories[p.category].push(p);
-  });
+  Object.values(products).forEach(p => { if (!categories[p.category]) categories[p.category] = []; categories[p.category].push(p); });
 
   return (
     <div>
@@ -1428,9 +865,7 @@ function ClientsTab({ clients, currentUser, isAdmin, onAddClient, onDeleteClient
             <input type="text" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="email@example.com" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: '#0a0f1a', color: '#e8edf5', border: `1px solid #1e2a3a`, borderRadius: '4px' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: '#2ea043', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-              Додати
-            </button>
+            <button onClick={handleAdd} style={{ width: '100%', padding: '8px', backgroundColor: '#2ea043', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Додати</button>
           </div>
         </div>
       </div>
@@ -1446,24 +881,7 @@ function ClientsTab({ clients, currentUser, isAdmin, onAddClient, onDeleteClient
           </tr>
         </thead>
         <tbody>
-          {clients.length === 0 ? (
-            <tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає клієнтів</td></tr>
-          ) : (
-            clients.map((client) => (
-              <tr key={client.id} style={{ borderBottom: `1px solid #1e2a3a` }}>
-                <td style={{ padding: '8px', color: '#e8edf5' }}>{client.name}</td>
-                <td style={{ padding: '8px', color: '#e8edf5' }}>{client.city}</td>
-                <td style={{ padding: '8px', color: '#e8edf5', fontSize: '11px' }}>{client.contact || '—'}</td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>
-                  {isAdmin && (
-                    <button onClick={() => onDeleteClient(client.id, client.name)} style={{ padding: '4px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>
-                      Видалити
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))
-          )}
+          {clients.length === 0 ? (<tr><td colSpan="4" style={{ padding: '10px', textAlign: 'center', color: '#e8edf5', opacity: 0.5 }}>Немає клієнтів</td></tr>) : (clients.map((client) => (<tr key={client.id} style={{ borderBottom: `1px solid #1e2a3a` }}><td style={{ padding: '8px', color: '#e8edf5' }}>{client.name}</td><td style={{ padding: '8px', color: '#e8edf5' }}>{client.city}</td><td style={{ padding: '8px', color: '#e8edf5', fontSize: '11px' }}>{client.contact || '—'}</td><td style={{ padding: '8px', textAlign: 'center' }}>{isAdmin && (<button onClick={() => onDeleteClient(client.id, client.name)} style={{ padding: '4px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>Видалити</button>)}</td></tr>)))}
         </tbody>
       </table>
     </div>
@@ -1474,17 +892,9 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
   const [newUserName, setNewUserName] = useState('');
 
   const handleAddUser = async () => {
-    if (!newUserName) {
-      alert('Введіть ім\'я!');
-      return;
-    }
-
+    if (!newUserName) { alert('Введіть ім\'я!'); return; }
     const exists = allowedUsers.find(u => u.name === newUserName);
-    if (exists) {
-      alert('Це ім\'я вже існує!');
-      return;
-    }
-
+    if (exists) { alert('Це ім\'я вже існує!'); return; }
     await onAddAllowedUser(newUserName);
     setNewUserName('');
   };
@@ -1501,9 +911,7 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
             <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Введіть ім'я" style={{ width: '100%', padding: '8px', marginTop: '5px', backgroundColor: '#0a0f1a', color: '#e8edf5', border: `1px solid #1e2a3a`, borderRadius: '4px' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleAddUser} style={{ width: '100%', padding: '8px', backgroundColor: '#2ea043', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-              Додати користувача
-            </button>
+            <button onClick={handleAddUser} style={{ width: '100%', padding: '8px', backgroundColor: '#2ea043', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Додати користувача</button>
           </div>
         </div>
       </div>
@@ -1518,17 +926,7 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
             </tr>
           </thead>
           <tbody>
-            {allowedUsers.map(user => {
-              const isRegistered = users.find(u => u.name === user.name);
-              return (
-                <tr key={user.name} style={{ borderBottom: `1px solid #1e2a3a` }}>
-                  <td style={{ padding: '8px', color: '#e8edf5' }}>{user.name}</td>
-                  <td style={{ padding: '8px', color: isRegistered ? '#2ea043' : '#c0392b' }}>
-                    {isRegistered ? '✅ Зареєстрований' : '⏳ Очікує реєстрації'}
-                  </td>
-                </tr>
-              );
-            })}
+            {allowedUsers.map(user => { const isRegistered = users.find(u => u.name === user.name); return (<tr key={user.name} style={{ borderBottom: `1px solid #1e2a3a` }}><td style={{ padding: '8px', color: '#e8edf5' }}>{user.name}</td><td style={{ padding: '8px', color: isRegistered ? '#2ea043' : '#c0392b' }}>{isRegistered ? '✅ Зареєстрований' : '⏳ Очікує реєстрації'}</td></tr>); })}
           </tbody>
         </table>
       </div>
@@ -1545,22 +943,7 @@ function AdminPanel({ users, allowedUsers, onAddAllowedUser, onDeleteUser }) {
             </tr>
           </thead>
           <tbody>
-            {users.map(user => (
-              <tr key={user.id} style={{ borderBottom: `1px solid #1e2a3a` }}>
-                <td style={{ padding: '8px', color: '#e8edf5' }}>{user.name}</td>
-                <td style={{ padding: '8px', color: '#e8edf5', fontSize: '11px' }}>{new Date(user.created_at).toLocaleDateString('uk-UA')}</td>
-                <td style={{ padding: '8px', color: user.is_admin ? '#c0392b' : '#e8edf5' }}>
-                  {user.is_admin ? '👑 АДМІН' : 'Користувач'}
-                </td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>
-                  {!user.is_admin && (
-                    <button onClick={() => onDeleteUser(user.id, user.name)} style={{ padding: '3px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px' }}>
-                      Видалити
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {users.map(user => (<tr key={user.id} style={{ borderBottom: `1px solid #1e2a3a` }}><td style={{ padding: '8px', color: '#e8edf5' }}>{user.name}</td><td style={{ padding: '8px', color: '#e8edf5', fontSize: '11px' }}>{new Date(user.created_at).toLocaleDateString('uk-UA')}</td><td style={{ padding: '8px', color: user.is_admin ? '#c0392b' : '#e8edf5' }}>{user.is_admin ? '👑 АДМІН' : 'Користувач'}</td><td style={{ padding: '8px', textAlign: 'center' }}>{!user.is_admin && (<button onClick={() => onDeleteUser(user.id, user.name)} style={{ padding: '3px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '11px' }}>Видалити</button>)}</td></tr>))}
           </tbody>
         </table>
       </div>
